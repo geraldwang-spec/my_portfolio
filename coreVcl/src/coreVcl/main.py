@@ -3,6 +3,8 @@
 #
 # if __name__ == '__main__':
 #     print(f'Sum: {add(1, 2)}')
+#
+
 from fastapi import FastAPI
 
 
@@ -17,6 +19,10 @@ def fastapi_01()->FastAPI:
     @app.get("/")
     async def root()->dict[str, str]:
         return {"message": "Hello World"}
+
+    @app.get("/qoo")
+    async def qoo()->dict[str,str]:
+        return {"message": "qoo"}
 
     return app
 
