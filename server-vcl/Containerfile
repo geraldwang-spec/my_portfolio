@@ -1,0 +1,42 @@
+# 使用 UBI 9 标准版作为基础镜像
+FROM registry.access.redhat.com/ubi9/ubi:latest
+
+# 確保系統能找到 --user 安裝的套件執行檔
+# 確保 Python 能找到 --user 安裝的庫
+ENV core_project="my_project" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="${PATH}:/home/appCore/.local/bin" \
+    PYTHONPATH="/app/src:${PYTHONPATH}:/home/appCore/.local/lib/python3.11/site-packages"
+
+# 更新系统并安装 Python 3.11 (以及 pip)
+RUN dnf -y update && \
+    dnf -y install python3.11 python3.11-pip && \
+    dnf clean all
+
+# 设置默认 python 命令 (可选，通过 alternatives)
+RUN alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
+    alternatives --set python3 /usr/bin/python3.11 && \
+    alternatives --install /usr/bin/pip pip /usr/bin/pip3.11 1
+
+RUN pip3.11 install --no-cache-dir uvicorn fastapi gunicorn
+
+RUN useradd appCore
+RUN mkdir app/
+RUN chown appCore:appCore app/
+
+WORKDIR /app
+
+USER appCore
+
+CMD ["/bin/bash", "-c", "\
+    if [ -f \"pyproject.toml\" ]; then \
+        pip install --user --no-cache-dir -e \"/app\"; \
+    fi && \
+    python3 -m gunicorn \"src.${core_project}.main:app\" \
+    --workers 2 \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --bind 0.0.0.0:8080 \
+    --timeout 60 \
+    --access-logfile - \
+"]
