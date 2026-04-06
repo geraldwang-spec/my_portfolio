@@ -52,6 +52,7 @@ dev = [
   "ruff", 
   "basedpyright", 
   "pytest",
+  "redis",
 ]
 dist = [
   "pyinstaller",

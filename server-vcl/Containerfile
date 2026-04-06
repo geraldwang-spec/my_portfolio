@@ -11,7 +11,7 @@ ENV core_project="my_project" \
 
 # 更新系统并安装 Python 3.11 (以及 pip)
 RUN dnf -y update && \
-    dnf -y install python3.11 python3.11-pip && \
+    dnf -y install python3.11 python3.11-pip postgresql && \
     dnf clean all
 
 # 设置默认 python 命令 (可选，通过 alternatives)
@@ -31,7 +31,13 @@ USER appCore
 
 CMD ["/bin/bash", "-c", "\
     if [ -f \"pyproject.toml\" ]; then \
-        pip install --user --no-cache-dir \".[datasci, dev, dist, web]\" || echo 'Pip install failed, skipping...'; \
+      echo '🚀 Starting pip install from pyproject.toml...'; \
+      if pip install --user --no-cache-dir \".[datasci, dev, dist, web]\"; then  \
+        echo 'pip install COMPLETED successfully!'; \
+      else \
+        echo 'pip install failed'; \
+        exit 1; \
+      fi \
     fi && \
     export PYTHONPATH=\"/app/src:${PYTHONPATH}\" && \
     python3 -m gunicorn \"${core_project}.main:app\" \
