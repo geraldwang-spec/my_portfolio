@@ -50,5 +50,7 @@ podman run --rm --pod vcl-pod --name vcl-test-tunnel \
   docker.io/cloudflare/cloudflared:latest \
   tunnel --url https://localhost:8443 --no-tls-verify
 
-
-
+# work on GCP VM
+podman run --rm --network host --name vcl-test-tunnel \
+  docker.io/cloudflare/cloudflared:latest \
+  tunnel --protocol http2 --url https://127.0.0.1:8443 --no-tls-verify
