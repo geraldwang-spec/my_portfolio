@@ -50,6 +50,10 @@ podman run --rm --pod vcl-pod --name vcl-test-tunnel \
   docker.io/cloudflare/cloudflared:latest \
   tunnel --url https://localhost:8443 --no-tls-verify
 
+# public port for GCP VM
+podman run -d --name vclnginx --network frontedn -p 8080:8080 -p 8443:8443  -v server-vcl/nginx_conf/conf/nginx/standalone.conf:/etc/nginx/nginx.conf:Z -v server-vcl/nginx_conf/web/html/:/opt/app-root/src:Z,ro -v server-vcl/nginx_conf/conf/certs:/etc/nginx/certs:Z,ro registry.redhat.io/ubi8/nginx-122:latest nginx -g "daemon off;"
+
+
 # work on GCP VM
 podman run --rm --network host --name vcl-test-tunnel \
   docker.io/cloudflare/cloudflared:latest \
