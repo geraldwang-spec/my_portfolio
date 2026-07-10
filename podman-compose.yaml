@@ -1,0 +1,35 @@
+version: 3.8
+
+networks:
+  frontend:
+    driver: bridge
+    ipam:
+      config: [{subnet: 10.101.1.0/24, gateway: 10.101.1.1}]
+  backend_redis:
+    driver: bridge
+    ipam:
+      config: [{subnet: 10.66.0.0/24, gateway: 10.66.0.1}]
+
+services:
+  vclredis:
+    image: registry.redhat.io/rhel9/redis-7:latest
+    container_name: vclredis
+    environment: 
+      - REDIS_PASSWORD=vclpasswd
+    volumes:
+      - ./test_d:/var/lib/redis/data:Z
+    networks:
+      backend_redis: {ipv4_address: 10.66.0.3}
+
+  pgsql_db:
+    image: registry.redhat.io/rhel9/postgresql-16:latest
+    container_name: pgsql_db
+    environment:
+      - POSTGRESQL_USER=services
+      - POSTGRESQL_PASSWORD=password 
+      - POSTGRESQL_DATABASE=vision_db
+    volumes:
+      - ./sqldata/:/var/lib/pgsql/data:Z
+    networks:
+      backend_redis: {ipv4_address: 10.66.0.4}
+
