@@ -1,7 +1,7 @@
 version: 3.8
 
 networks:
-  frontend:
+  vcl_frontend:
     driver: bridge
     ipam:
       config: [{subnet: 10.101.1.0/24, gateway: 10.101.1.1}]
@@ -35,4 +35,57 @@ services:
       - ./sqldata/:/var/lib/pgsql/data:Z,U
     networks:
       vcl_backend_redis: {ipv4_address: 10.66.0.4}
+
+  core_pj:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: localhost/my-ubi-python:latest
+    container_name: core_pj
+    environment:
+      - core_project=core_project
+    networks:
+      - vcl_frontend
+      - vcl_backend_redis
+    userns: keep-id
+    volumes:
+      - ./coreVcl:/app:Z #,U 最後到生產環境時還是需要加上
+    command: tail -f /dev/null # ready for development
+
+  vclnginx:
+    image: registry.redhat.io/ubi8/nginx-122:latest
+    container_name: vclnginx
+    # 開發完之後需未來如果你把 core_pj 的 command 改回跑後端服務（如 Gunicorn），且需
+    # 要 Nginx 精準等到後端「服務完全就緒（可連線狀態）」才開，那需要在 core_pj 裡加上
+    # healthcheck 設定，並把 depends_on 改寫成 condition: service_healthy 模式。
+    depends_on:
+      - core_pj
+    # 開啟可以在本地測試
+    # ports:
+    #   - "8080:8080"
+    #   - "8443:8443"
+    volumes:
+      - ./server-vcl/nginx_conf/conf/nginx/standalone.conf:/etc/nginx/nginx.conf:Z
+      - ./server-vcl/nginx_conf/conf/certs/:/etc/nginx/certs:Z,ro 
+      # - ./coreVcl/templates/:/opt/app-root/src:Z,ro
+      - ./coreVcl/static/:/opt/app-root/src/static:Z,ro
+    networks:
+      - vcl_frontend
+    command: nginx -g "daemon off;"
+  vcl_tunnel:
+    image: docker.io/cloudflare/cloudflared:latest
+    container_name: vcl_tunnel
+    depends_on:
+      - vclnginx
+    networks: 
+      - vcl_frontend
+    command:
+      - tunnel
+      - --protocol
+      - http2
+      - --url 
+      - https://vclnginx:8443
+      - --no-tls-verify
+
+
 
