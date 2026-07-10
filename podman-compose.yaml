@@ -5,7 +5,7 @@ networks:
     driver: bridge
     ipam:
       config: [{subnet: 10.101.1.0/24, gateway: 10.101.1.1}]
-  backend_redis:
+  vcl_backend_redis:
     driver: bridge
     ipam:
       config: [{subnet: 10.66.0.0/24, gateway: 10.66.0.1}]
@@ -17,19 +17,22 @@ services:
     environment: 
       - REDIS_PASSWORD=vclpasswd
     volumes:
-      - ./test_d:/var/lib/redis/data:Z
+      - ./redis_data:/var/lib/redis/data:Z
     networks:
-      backend_redis: {ipv4_address: 10.66.0.3}
+      vcl_backend_redis: {ipv4_address: 10.66.0.3}
 
   pgsql_db:
-    image: registry.redhat.io/rhel9/postgresql-16:latest
-    container_name: pgsql_db
+    image: registry.redhat.io/rhel9/mariadb-1011
+    container_name: mariadb_db
+    ports:
+      - "3306:3306"   # for development
     environment:
-      - POSTGRESQL_USER=services
-      - POSTGRESQL_PASSWORD=password 
-      - POSTGRESQL_DATABASE=vision_db
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_USER=services
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=vision_db
     volumes:
-      - ./sqldata/:/var/lib/pgsql/data:Z
+      - ./sqldata/:/var/lib/pgsql/data:Z,U
     networks:
-      backend_redis: {ipv4_address: 10.66.0.4}
+      vcl_backend_redis: {ipv4_address: 10.66.0.4}
 
