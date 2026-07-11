@@ -11,8 +11,13 @@ ENV core_project="my_project" \
 
 # 更新系统并安装 Python 3.11 (以及 pip)
 RUN dnf -y update && \
-    dnf -y install python3.11 python3.11-pip postgresql && \
+    dnf -y install python3.11 python3.11-pip python3.11-wheel && \
     dnf clean all
+    # dnf -y install 'dnf-command(config-manager)' && \
+    # dnf config-manager --set-enabled ubi-9-codeready-builder-rpms && \
+    # dnf -y install python3.11 python3.11-pip postgresql gcc mariadb-connector-c-devel && \
+    # dnf -y install python3.11-devel python3.11-wheel && \
+    # dnf clean all
 
 # 设置默认 python 命令 (可选，通过 alternatives)
 RUN alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
