@@ -11,6 +11,10 @@ def create_app()->Flask:
     def login_html():
         return render_template('login.html')
     
+
+    @app.route('/resetpasswd')
+    def reset_passwd_html():
+        return render_template('reset_passwd.html')
     return app
 
 

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reset Password</title>
+  <!-- 1. 補上 Roboto 字體 -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700,900&font-display=swap">
+
+  <!-- 2. 補上 Font Awesome 圖標庫 -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  <link href="/static/css/login.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="materialContainer">
+    <div class="box">
+
+      <div class="title">Reset Password</div>
+
+      <div class="input">
+        <label for="pass">New Password</label>
+        <input type="password" name="passwd" id="passwd">
+        <span class="spin"></span>
+      </div>
+
+      <div class="input">
+        <label for="pass">Confirm Password</label>
+        <input type="password" name="confirmpass" id="confirmpass">
+        <span class="spin"></span>
+      </div>
+
+      <div class="button login">
+        <button><span>Reset</span> <i class="fa fa-check"></i></button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 4. 💡 關鍵：必須在你的 login.js 之前，先載入 jQuery 庫 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+  <!-- 5. 你的本地 JS -->
+  <script src="/static/js/login.js"></script>
+</body>
+
+</html>
