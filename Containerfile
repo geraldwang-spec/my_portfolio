@@ -12,6 +12,7 @@ ENV core_project="my_project" \
 # 更新系统并安装 Python 3.11 (以及 pip)
 RUN dnf -y update && \
     dnf -y install python3.11 python3.11-pip python3.11-wheel && \
+    dnf -y install iputils && \
     dnf clean all
     # dnf -y install 'dnf-command(config-manager)' && \
     # dnf config-manager --set-enabled ubi-9-codeready-builder-rpms && \

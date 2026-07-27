@@ -1,6 +1,7 @@
+from sys import modules
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
-from sql_module import DatabaseManager, UserModule
+from modules.sql_module import DatabaseManager,UserModule
 
 class UserData:
     _db_m:DatabaseManager

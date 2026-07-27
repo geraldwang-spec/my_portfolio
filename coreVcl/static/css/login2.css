@@ -1,0 +1,74 @@
+:root {
+  --color-primary: #ED2553;
+  --color-white: #fff;
+  --color-text: rgba(0, 0, 0, 0.8);
+  --radius: 10px;
+  --transition-speed: 300ms;
+  --font-main: 'Roboto', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: black;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-main);
+}
+
+.auth-card {
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel {
+  background: var(--color-white);
+  border-radius: var(--radius);
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.field {
+  position: relative;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.field input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: var(--font-main);
+  font-size: 22px;
+  color: var(--color-text);
+  padding-bottom: 10px;
+}
+
+.field label {
+  font-family: var(--font-main);
+  color: var(--color-text);
+  font-size: 18px;
+}
+
+.btn {
+  padding: 15px 20px;
+  border-radius: var(--radius);
+  font-size: 16px;
+  border: 2px solid gray;
+  background: var(--color-white);
+  cursor: pointer;
+  color: yellowgreen;
+}
+
+.toggle-btn {
+  background-color: green;
+}

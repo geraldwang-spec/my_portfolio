@@ -2,7 +2,7 @@ from flask import Flask
 from flask.config import T
 from flask_mail import Mail, Message
 from threading import Thread
-from sql_module import UserModule
+from modules.sql_module import UserModule
 
 class MailProcess:
     mail: Mail

@@ -1,9 +1,15 @@
 from flask import Blueprint, Flask, render_template, request
 from auth.auth_api import create_auth_bp
+from auth.login_controller import LoginController as loginC
+
 
 def create_app()->Flask:
     app:Flask = Flask(__name__)
-    auth_blueprint:Blueprint= create_auth_bp()
+
+    loginCore:loginC = loginC(_app=app)
+    loginCore.init_core()
+
+    auth_blueprint:Blueprint= create_auth_bp(loginCore)
     app.register_blueprint(blueprint=auth_blueprint)
 
     @app.route('/')

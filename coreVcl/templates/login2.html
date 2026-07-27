@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login</title>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Roboto:400,100,300,500,700,900&font-display=swap">
+
+  <!-- 2. 補上 Font Awesome 圖標庫 -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  <link href="/static/css/login2.css" rel="stylesheet">
+</head>
+
+
+<body>
+
+  <div class="auth-card">
+
+    <form class="panel panel--login">
+      <h2>LOGIN</h2>
+      <div class="field">
+        <input type="text" id="login-username" name="username" required>
+        <label for="login-username">Username</label>
+      </div>
+      <div class="field">
+        <input type="password" id="login-password" name="login-password" required>
+        <label for="login-password">Password</label>
+      </div>
+      <button type="submit" class="btn btn--login">...</button>
+      <a href="#">Forgot your password</a>
+    </form>
+
+    <form class="panel panel--register">
+      <h2>REGISTER</h2>
+      <div class="field">
+        <input type="text" id="register-username" name="register-username" required>
+        <label for="register-username">Username</label>
+
+      </div>
+
+      <div class="field">
+        <input type="password" id="register-password" name="register-password" required>
+        <label for="register-password">Password</label>
+      </div>
+      <div class="field">
+        <input type="password" id="register-repeat" name="register-repeat" required>
+        <label for="register-repeat">Repeat Password</label>
+      </div>
+
+      <div class="field">
+        <input type="email" id="register-email" name="register-email" required>
+        <label for="register-email">E-mail</label>
+      </div>
+
+      <button type="submit" class="btn btn--register">register</button>
+    </form>
+
+    <button type="button" class="toggle-btn" aria-label="切換到註冊">
+      <span class="toggle-btn__shape"> </span>
+    </button>
+
+  </div>
+
+  <script src="/static/js/login2.js" defer></script>
+
+</body>
+
+
+</html>

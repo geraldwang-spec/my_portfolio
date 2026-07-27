@@ -1,11 +1,11 @@
 version: 3.8
 
 networks:
-  vcl_frontend:
+  frontend:
     driver: bridge
     ipam:
       config: [{subnet: 10.101.1.0/24, gateway: 10.101.1.1}]
-  vcl_backend_redis:
+  backend_redis:
     driver: bridge
     ipam:
       config: [{subnet: 10.66.0.0/24, gateway: 10.66.0.1}]
@@ -19,9 +19,9 @@ services:
     volumes:
       - ./redis_data:/var/lib/redis/data:Z
     networks:
-      vcl_backend_redis: {ipv4_address: 10.66.0.3}
+      backend_redis: {ipv4_address: 10.66.0.3}
 
-  pgsql_db:
+  mariadb_db:
     image: registry.redhat.io/rhel9/mariadb-1011
     container_name: mariadb_db
     ports:
@@ -32,9 +32,9 @@ services:
       - MYSQL_PASSWORD=password
       - MYSQL_DATABASE=vision_db
     volumes:
-      - ./sqldata/:/var/lib/pgsql/data:Z,U
+      - ./sqldata/:/var/lib/mysql:Z,U
     networks:
-      vcl_backend_redis: {ipv4_address: 10.66.0.4}
+      backend_redis: {ipv4_address: 10.66.0.4}
 
   core_pj:
     build:
@@ -45,8 +45,8 @@ services:
     environment:
       - core_project=core_project
     networks:
-      - vcl_frontend
-      - vcl_backend_redis
+      - frontend
+      - backend_redis
     userns: keep-id
     volumes:
       - ./coreVcl:/app:Z #,U 最後到生產環境時還是需要加上
@@ -70,7 +70,7 @@ services:
       # - ./coreVcl/templates/:/opt/app-root/src:Z,ro
       - ./coreVcl/static/:/opt/app-root/src/static:Z,ro
     networks:
-      - vcl_frontend
+      - frontend
     command: nginx -g "daemon off;"
   vcl_tunnel:
     image: docker.io/cloudflare/cloudflared:latest
@@ -78,7 +78,7 @@ services:
     depends_on:
       - vclnginx
     networks: 
-      - vcl_frontend
+      - frontend
     command:
       - tunnel
       - --protocol

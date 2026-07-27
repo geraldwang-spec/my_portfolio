@@ -1,15 +1,14 @@
+from ast import Dict
 from dataclasses import dataclass
 import os
 import random
-from tempfile import template
 from typing import Any
 from flask import Flask
 from flask.cli import load_dotenv
-from sqlalchemy import Null
 from werkzeug.security import generate_password_hash, check_password_hash
-from sql_module import DatabaseManager, UserModule
-from login_process import UserData as user
-from mail_process import MailProcess as mailp
+from modules.sql_module import DatabaseManager, UserModule
+from auth.login_process import UserData as user
+from modules.mail_process import MailProcess as mailp
 
 
 @dataclass
@@ -18,6 +17,12 @@ class LoginResponse:
     error_message:str = ""
     extra_data: Any|None = None
 
+    def to_dict(self, data:dict[str, Any]) -> dict[str, str | Any]:
+        return {
+            "user_id": str(self.user_id),
+            "username": str(self.username),
+            "email": str(self.email)
+        }
 
 class LoginController:
     users: list[user] = []
@@ -47,7 +52,7 @@ class LoginController:
         )
         self.__mailproc = mailp(self.app)
         # self.__db_m = DatabaseManager()
-        self.__db_m = DatabaseManager(db_url="mysql+pymysql://root:1234@localhost:3306/login")
+        self.__db_m = DatabaseManager(db_url="mysql+pymysql://services:password@mariadb_db:3306/vision_db")
         self.__db_m.init_db()
         self.__userProcess = user(db_manager=self.__db_m)
 
