@@ -54,9 +54,22 @@ body {
 }
 
 .field label {
+  position: absolute;
+  top: 10px;
+  left: 0px;
   font-family: var(--font-main);
   color: var(--color-text);
-  font-size: 18px;
+  font-size: 22px;
+  transition: all var(--transition-speed);
+}
+
+.field input:focus+label,
+.field input:not(:placeholder-shown)+label {
+  position: absolute;
+  font-size: 12px;
+  top: 0px;
+  left: 0px;
+  color: red;
 }
 
 .btn {

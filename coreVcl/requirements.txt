@@ -5,3 +5,6 @@ sqlalchemy
 Flask-Mail
 pymysql
 python-dotenv
+gradio
+torch
+transformers
