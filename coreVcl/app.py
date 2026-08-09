@@ -21,7 +21,6 @@ def create_app()->Flask:
     return app
 
 if __name__ == "__main__":
-   
     gradio_thread = threading.Thread(
         target=vgdio.create_and_launch_gradio,
             kwargs={"server_name":"0.0.0.0", "server_port":7860},
@@ -32,4 +31,5 @@ if __name__ == "__main__":
 
 
     flask_app = create_app()
-    flask_app.run(host="0.0.0.0", debug=True, port=5000, use_reloader=False)
+    # flask_app.run(host="0.0.0.0", debug=True, port=5000, use_reloader=False)
+    flask_app.run(host="0.0.0.0", debug=True, port=5000)

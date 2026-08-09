@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, render_template, request
+from flask import Flask, Blueprint, jsonify, render_template, request
 from auth.login_controller import LoginController as loginC, user
 
 def create_auth_bp(loginCore:loginC)->Blueprint:
@@ -24,8 +24,12 @@ def create_auth_bp(loginCore:loginC)->Blueprint:
     def reset_passwd_html():
         return render_template('reset_passwd.html')
 
-    @auth_bp.route('/login2')
-    def login2()->str:
-        return render_template('login2.html')
+    @auth_bp.route('/login2', methods=['POST', "GET"])
+    def login2():
+        if request.method == "GET":
+            return render_template(template_name_or_list="login2.html")
+        else:
+            loginCore.check_user_status
+            return jsonify({"success": True, "message":"登入成功"})
 
     return auth_bp

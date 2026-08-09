@@ -1,28 +1,18 @@
 from ast import Dict
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import os
 import random
 from typing import Any
-from flask import Flask
+from flask import Flask, jsonify
 from flask.cli import load_dotenv
+from sqlalchemy import false, null, true
 from werkzeug.security import generate_password_hash, check_password_hash
+from auth.login_response import loginResponse
 from modules.sql_module import DatabaseManager, UserModule
 from auth.login_process import UserData as user
 from modules.mail_process import MailProcess as mailp
+from auth.login_process import LoginResponse 
 
-
-@dataclass
-class LoginResponse:
-    template:str = ""
-    error_message:str = ""
-    extra_data: Any|None = None
-
-    def to_dict(self, data:dict[str, Any]) -> dict[str, str | Any]:
-        return {
-            "user_id": str(self.user_id),
-            "username": str(self.username),
-            "email": str(self.email)
-        }
 
 class LoginController:
     users: list[user] = []
@@ -60,38 +50,22 @@ class LoginController:
         assert self.__userProcess is not None, "__userProcess should be init"
         user = self.__userProcess.get_user_by_username(username)
         if not user:
-            return LoginResponse(
-                template="index.html",
-                error_message="User wasn't register"
-            )
+            return loginResponse(success= False, message= f"{username}未註冊", data= None)
 
         if check_password_hash( user.passwd, passwd) == False:
-            return LoginResponse(
-                template="index.html",
-                error_message="user name or password fail",
-                extra_data=user.username
-            )
+            return loginResponse(success=False, message=f"帳號或密碼錯誤", data=None)
 
         if user.mail_check_number == 0:
-            return LoginResponse(
-                template="index.html",
-                error_message="E-mail doesn't verify"
-            )
+            return loginResponse(success=False, message=f"E-mail未確認", data=None)
 
-        return LoginResponse(
-            template="game",
-            extra_data=user.username
-        )
+        return loginResponse(success=True, message="", data=user.username)
 
     def user_register(self, user_name:str, passwd:str, email:str, name:str)->LoginResponse:
         assert self.__userProcess is not None, "__userProcess should be init"
-        user_c = self.__userProcess.get_user_by_username(user_name)
+        user_c:UserModule | None = self.__userProcess.get_user_by_username(user_name)
 
         if user_c != None:
-            return LoginResponse(
-                template="register.html",
-                error_message=f"{user_name} is exist"
-            )
+            return loginResponse(success=False, message=f"{user_name}存在", data=None)
 
         user_c = UserModule(
             username = user_name,
@@ -103,39 +77,28 @@ class LoginController:
         )
 
         if self.__userProcess.create_user(user_c) == False:
-            return LoginResponse(
-                template="register.html",
-                error_message=f"create {user_name} fail, try again"
-            )
+            return loginResponse(success=False, message=f"{user_name}註冊失敗，請重新註冊", data=None)
 
         assert self.__mailproc is not None, "__mailproc should be init"
         self.__mailproc.start_mail_thread(user=user_c)
-        return LoginResponse(template="index.html")
+
+        return loginResponse(success=True, message="", data=None)
 
     def get_check_mail(self, user_name:str, number:str)->LoginResponse:
         assert self.__userProcess is not None, "__userProcess should be init"
         user_c = self.__userProcess.get_user_by_username(user_name)
 
         if user_c == None:
-            return LoginResponse(
-                template="mailcheck.html",
-                error_message="Register error, Please register again"
-            )
+            return loginResponse(success=False,  message=f"註冊失敗，請重新註冊", data=None)
     
         if eval(number) != user_c.mail_check_number:
-            return LoginResponse(
-                template="index.html",
-                error_message="Check Mail fail, please register again"
-            )
+            return loginResponse(success=False, message=f"E-mail驗證失敗，請重新註冊", data=None)
         
         if self.__userProcess.update_mail_ready(user_name, True) == False:
-            return LoginResponse(
-                template="index.html",
-                error_message="register error, please register again"
-            )
+            return loginResponse(success=False, message="註冊失敗，請重新註冊", data=None)
 
-        return LoginResponse(
-            template="login")
+
+        return loginResponse(success=True, message="", data=None)
 
     # def game_process(self, input_user_name:str, input_user_choice:str)->LoginResponse:
     #     if input_user_choice == "":
