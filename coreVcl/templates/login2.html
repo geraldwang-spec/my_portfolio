@@ -16,12 +16,12 @@
 
 <body>
 
-  <div class="auth-card">
+  <div class="auth-card" data-view="login">
 
     <form class="panel panel--login">
       <h2>LOGIN</h2>
       <div class="field">
-        <input type="text" id="login-username" name="username" required placeholder=" ">
+        <input type="text" id="login-username" name="login-username" required placeholder=" ">
         <label for="login-username">Username</label>
       </div>
       <div class="field">
@@ -32,7 +32,7 @@
       <button type="submit" class="btn btn--login">
         GO
       </button>
-      <a href="#">Forgot your password</a>
+      <a href="#" class="pass-forget">Forgot your password</a>
     </form>
 
     <form class="panel panel--register">
@@ -63,6 +63,22 @@
     <button type="button" class="toggle-btn" aria-label="切換到註冊">
       <span class="toggle-btn__shape"> </span>
     </button>
+
+    <form class="panel panel--reset">
+      <h2>RESET</h2>
+      <div class="field">
+        <input type="text" id="reset-username" name="reset-username" required placeholder=" ">
+        <label for="reset-username">Username</label>
+      </div>
+
+      <div class="field">
+        <input type="email" id="reset-email" name="reset-email" required placeholder=" ">
+        <label for="reset-email">E-mail</label>
+      </div>
+
+      <p class="error-message"></p>
+      <button type="submit" class="btn btn--reset">register</button>
+    </form>
 
   </div>
 

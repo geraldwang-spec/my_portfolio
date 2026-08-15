@@ -6,6 +6,7 @@ from modules.sql_module import DatabaseManager,UserModule
 class UserData:
     _db_m:DatabaseManager
     __pass_count:int
+
     def __init__(self, db_manager:DatabaseManager ) -> None:
         self._db_m = db_manager
         self.__pass_count:int = 0

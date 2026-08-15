@@ -11,7 +11,7 @@ from auth.login_response import loginResponse
 from modules.sql_module import DatabaseManager, UserModule
 from auth.login_process import UserData as user
 from modules.mail_process import MailProcess as mailp
-from auth.login_process import LoginResponse 
+# from auth.login_process import LoginResponse 
 
 
 class LoginController:
@@ -21,6 +21,7 @@ class LoginController:
     __db_m:DatabaseManager|None
     __userProcess:user |None
     # __gameUsers:list[GameModule] | None 
+    __vcl_tunnel_url:str = ""
 
     def __init__(self, _app:Flask) -> None:
         self.app = _app
@@ -28,6 +29,7 @@ class LoginController:
         self.__db_m = None
         self.__userProcess = None
         self.__gameUsers = []
+        self.__vcl_tunnel_url = "https://discovered-lecture-conviction-tests.trycloudflare.com/"
 
     def init_core(self)->None:
         _ = load_dotenv()
@@ -40,7 +42,7 @@ class LoginController:
             MAIL_USERNAME=os.environ.get("MAIL_USERNAME"),
             MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD")
         )
-        self.__mailproc = mailp(self.app)
+        self.__mailproc = mailp(self.app, _tunnel_url=self.__vcl_tunnel_url)
         # self.__db_m = DatabaseManager()
         self.__db_m = DatabaseManager(db_url="mysql+pymysql://services:password@mariadb_db:3306/vision_db")
         self.__db_m.init_db()
@@ -55,12 +57,14 @@ class LoginController:
         if check_password_hash( user.passwd, passwd) == False:
             return loginResponse(success=False, message=f"帳號或密碼錯誤", data=None)
 
-        if user.mail_check_number == 0:
+        print(f"mail_check_number {user.mail_check_number}")
+
+        if user.mail_check_number != 0:
             return loginResponse(success=False, message=f"E-mail未確認", data=None)
 
         return loginResponse(success=True, message="", data=user.username)
 
-    def user_register(self, user_name:str, passwd:str, email:str, name:str)->LoginResponse:
+    def user_register(self, user_name:str, passwd:str, email:str)->loginResponse:
         assert self.__userProcess is not None, "__userProcess should be init"
         user_c:UserModule | None = self.__userProcess.get_user_by_username(user_name)
 
@@ -71,7 +75,7 @@ class LoginController:
             username = user_name,
             passwd = generate_password_hash(passwd),
             mail = email,
-            name = name,
+            # name = name,
             mail_ready = False,
             mail_check_number = random.randint(1000, 9999),
         )
@@ -84,7 +88,7 @@ class LoginController:
 
         return loginResponse(success=True, message="", data=None)
 
-    def get_check_mail(self, user_name:str, number:str)->LoginResponse:
+    def get_check_mail(self, user_name:str, number:str)->loginResponse:
         assert self.__userProcess is not None, "__userProcess should be init"
         user_c = self.__userProcess.get_user_by_username(user_name)
 

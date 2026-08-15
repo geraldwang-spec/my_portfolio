@@ -23,7 +23,9 @@ body {
 }
 
 .auth-card {
+  width: 100%;
   max-width: 460px;
+  min-height: 500px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -37,30 +39,73 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.panel--login {
-  opacity: 1;
+  position: relative;
   transform: translateY(0);
-  transition: opacity var(--transition-speed), transform var(--transition-speed);
 }
 
-.panel--register {
+.panel--login,
+.panel--register,
+.panel--reset {
   width: 100%;
   opacity: 0;
   position: absolute;
   pointer-events: none;
+  transform: translateY(2px);
+  transition: opacity var(--transition-speed), transform var(--transition-speed);
 }
 
-.auth-card.is-register-active .panel--login {
+.panel--login {
   opacity: 0;
   pointer-events: none;
 }
 
-.auth-card.is-register-active .panel--register {
+.panel--register {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.panel--reset {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.auth-card[data-view="login"] .panel--login {
   opacity: 1;
   pointer-events: auto;
 }
+
+.auth-card[data-view="register"] .panel--register {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.auth-card[data-view="reset"] .panel--reset {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* .panel--login { */
+/*   opacity: 1; */
+/*   transform: translateY(0); */
+/*   transition: opacity var(--transition-speed), transform var(--transition-speed); */
+/* } */
+/**/
+/* .panel--register { */
+/*   width: 100%; */
+/*   opacity: 0; */
+/*   position: absolute; */
+/*   pointer-events: none; */
+/* } */
+
+/* .auth-card.is-register-active .panel--login { */
+/*   opacity: 0; */
+/*   pointer-events: none; */
+/* } */
+/**/
+/* .auth-card.is-register-active .panel--register { */
+/*   opacity: 1; */
+/*   pointer-events: auto; */
+/* } */
 
 .field {
   position: relative;
@@ -75,7 +120,8 @@ body {
   font-family: var(--font-main);
   font-size: 22px;
   color: var(--color-text);
-  padding-bottom: var(--color-primary);
+  /* padding-bottom: var(--color-primary); */
+  padding-top: 8px;
   outline: none;
 }
 

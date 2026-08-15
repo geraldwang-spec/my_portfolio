@@ -12,7 +12,7 @@ class UserModule(Base):
     username:Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     passwd:Mapped[str] = mapped_column(String(255), nullable=False)
     mail: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    # name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     mail_ready:Mapped[bool] = mapped_column(Boolean, nullable=False, default=False) 
     mail_check_number:Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     account_created:Mapped[datetime] = mapped_column(

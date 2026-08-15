@@ -8,11 +8,13 @@ class MailProcess:
     mail: Mail
     app: Flask
     _mtqoo:Thread|None
+    tunnel_url:str|None
 
-    def __init__(self, app:Flask) -> None:
+    def __init__(self, app:Flask, _tunnel_url:str = "") -> None:
         self.mail = Mail(app)
         self.app = app
         self._mtqoo = None
+        self.tunnel_url = _tunnel_url
         
     def start_mail_thread(self, user:UserModule)->None:
         msg_title = 'Hello It is checking mail'
@@ -24,7 +26,7 @@ class MailProcess:
         #  郵件內容
         # msg_body = 'Hey, I am mail body!'
         # 也可以利用html做內容
-        msg_html:str = f'<h1>Hey, this is verify mail. Please click <a href=\"http://127.0.0.1:5000/mailcheck?user={user.username}&mail_number={user.mail_check_number}\">this</a></h1>'
+        msg_html:str = f'<h1>Hey, this is verify mail. Please click <a href=\"{self.tunnel_url}/auth/mailverify?user={user.username}&mail_number={user.mail_check_number}\">this</a></h1>'
         msg = Message(subject=msg_title,
                       sender=msg_sender,
                       recipients=msg_recipients)

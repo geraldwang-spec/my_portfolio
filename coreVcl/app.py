@@ -21,13 +21,13 @@ def create_app()->Flask:
     return app
 
 if __name__ == "__main__":
-    gradio_thread = threading.Thread(
-        target=vgdio.create_and_launch_gradio,
-            kwargs={"server_name":"0.0.0.0", "server_port":7860},
-        daemon=True,
-    )
-
-    gradio_thread.start()
+    # gradio_thread = threading.Thread(
+    #     target=vgdio.create_and_launch_gradio,
+    #         kwargs={"server_name":"0.0.0.0", "server_port":7860},
+    #     daemon=True,
+    # )
+    #
+    # gradio_thread.start()
 
 
     flask_app = create_app()

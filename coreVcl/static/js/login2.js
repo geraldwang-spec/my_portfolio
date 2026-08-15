@@ -70,8 +70,21 @@ function initRegisterSubmit() {
   form.addEventListener('submit', function(event) {
     event.preventDefault()
     submitForm(form, '/auth/register', function(result) {
-      window.location.href = '/auth/login';
+      window.location.href = '/auth/login2';
     });
+  });
+}
+
+function initResetSubmit() {
+  const form = document.querySelector('.panel--reset');
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+    submitForm(form, '/auth/resetpasswd', function(result) {
+      if (result.success) {
+        alert(result.message);
+      }
+      window.location.href = '/auth/login2';
+    })
   });
 }
 
@@ -89,9 +102,17 @@ function initRegisterSubmit() {
 function initCardToggle() {
   const authCard = document.querySelector('.auth-card');
   const toggleBtn = document.querySelector('.toggle-btn');
+  const reset = document.querySelector('.pass-forget');
 
   toggleBtn.addEventListener('click', function() {
-    authCard.classList.toggle('is-register-active');
+    const current = authCard.dataset.view;
+    authCard.dataset.view = current === "login" ? "register" : "login";
+    // authCard.classList.toggle('is-register-active');
+  });
+
+  reset.addEventListener('click', function(event) {
+    event.preventDefault();
+    authCard.dataset.view = "reset";
   });
 }
 
@@ -102,4 +123,5 @@ document.addEventListener('DOMContentLoaded', function() {
   initLoginSubmit();
   initRegisterSubmit();
   initCardToggle();
+  initResetSubmit();
 })
