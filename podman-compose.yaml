@@ -19,7 +19,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - ./redis_data:/var/lib/redis/data:Z
+      - ./redis_data:/var/lib/redis/data:Z,U
     networks:
       backend_redis: {ipv4_address: 10.66.0.3}
 

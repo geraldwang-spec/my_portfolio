@@ -42,6 +42,19 @@ class UserData:
                 print(f"get user db failed: {e}")
                 return None
 
+    def get_user_by_username_and_mail(self, username:str, mail:str) -> UserModule|None:
+        with self._db_m.get_session() as session:
+            try:
+                stmt = select(UserModule).where((UserModule.username == username) & (UserModule.mail == mail))
+                user = session.scalars(stmt).first()
+                if user:
+                    session.expunge(user)
+                return user
+            except SQLAlchemyError as e:
+                session.rollback()
+                print(f"get user db failed: {e}")
+                return None
+
     def update_mail_ready(self, username:str, ready:bool) ->bool:
         with self._db_m.get_session() as session:
             try:

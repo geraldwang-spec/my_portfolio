@@ -97,11 +97,24 @@ def create_auth_bp(loginCore:loginC)->Blueprint:
 
     @auth_bp.route('/resetpasswd', methods=['POST'])
     def reset_passwd_html():
-        return loginResponse(
-            success=True,
-            message="回信箱收確認信",
-            data=None
-        ).to_response()
-        # return render_template('reset_passwd.html')
+        data = request.get_json()
+        if not isinstance(data, dict):
+            return loginResponse(
+                success=False,
+                message="無效JSON格式",
+                data=None
+            )
+
+        user_name = data.get('reset-username')
+        email = data.get('reset-email')
+        res:loginResponse = loginCore.send_reset_password(username=user_name, email=email)
+
+        return res.to_response()
+
+    @auth_bp.route('/reset_passwd')
+    def reset_passwd_by_user():
+        return render_template(
+            template_name_or_list="reset_passwd.html"
+        )
 
     return auth_bp

@@ -2,6 +2,7 @@ from ast import Dict
 from dataclasses import asdict, dataclass
 import os
 import random
+from readline import redisplay
 from typing import Any
 from flask import Flask, jsonify
 from flask.cli import load_dotenv
@@ -11,6 +12,7 @@ from auth.login_response import loginResponse
 from modules.sql_module import DatabaseManager, UserModule
 from auth.login_process import UserData as user
 from modules.mail_process import MailProcess as mailp
+from auth.login_redis_process import LoginRedisProcess as redisP
 # from auth.login_process import LoginResponse 
 
 
@@ -22,6 +24,7 @@ class LoginController:
     __userProcess:user |None
     # __gameUsers:list[GameModule] | None 
     __vcl_tunnel_url:str = ""
+    __rds:redisP |None
 
     def __init__(self, _app:Flask) -> None:
         self.app = _app
@@ -29,7 +32,8 @@ class LoginController:
         self.__db_m = None
         self.__userProcess = None
         self.__gameUsers = []
-        self.__vcl_tunnel_url = "https://discovered-lecture-conviction-tests.trycloudflare.com/"
+        self.__vcl_tunnel_url = "https://best-group-hunter-medicines.trycloudflare.com/"
+        self.__rds = None
 
     def init_core(self)->None:
         _ = load_dotenv()
@@ -47,6 +51,7 @@ class LoginController:
         self.__db_m = DatabaseManager(db_url="mysql+pymysql://services:password@mariadb_db:3306/vision_db")
         self.__db_m.init_db()
         self.__userProcess = user(db_manager=self.__db_m)
+        self.__rds = redisP(host=os.environ.get("REDIS_HOST"), passwd= os.environ.get("REDIS_PASSWORD"))
 
     def check_user_status(self, username:str, passwd:str):
         assert self.__userProcess is not None, "__userProcess should be init"
@@ -101,8 +106,40 @@ class LoginController:
         if self.__userProcess.update_mail_ready(user_name, True) == False:
             return loginResponse(success=False, message="註冊失敗，請重新註冊", data=None)
 
-
         return loginResponse(success=True, message="", data=None)
+
+    def send_reset_password(self, username:str, email:str)->loginResponse:
+        assert self.__userProcess is not None, "__userProcess should be init"
+        assert self.__rds is not None, "__rds should be init"
+        assert self.__mailproc is not None, "__mailproc should be init"
+        user_c:UserModule | None = self.__userProcess.get_user_by_username_and_mail(username, email)
+
+        if not user_c:
+            return loginResponse(
+                success=False,
+                message=f"{username}無此帳號",
+                data=None)
+
+        if not user_c.mail_ready:
+            return loginResponse(
+                success=False,
+                message=f"{user_c.username} E-mail未完成驗證",
+                data=None)
+
+        randNum: int = random.randint(111111, 999999)
+        result, mesg = self.__rds.reset_password_number(user=user_c, number=randNum)
+        if not result:
+            return loginResponse(
+                success=False,
+                message=mesg,
+                data=None )
+
+        self.__mailproc.send_reset_mail_thread(user=user_c, reset_nu=randNum)
+        
+        return loginResponse(
+            success=True,
+            message="請於E-mail收確認信",
+            data=None)
 
     # def game_process(self, input_user_name:str, input_user_choice:str)->LoginResponse:
     #     if input_user_choice == "":

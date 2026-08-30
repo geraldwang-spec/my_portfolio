@@ -9,3 +9,5 @@ gradio
 torch
 transformers
 pydantic
+redis
+pytest
