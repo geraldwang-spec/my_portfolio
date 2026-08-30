@@ -6,6 +6,7 @@ from readline import redisplay
 from typing import Any
 from flask import Flask, jsonify
 from flask.cli import load_dotenv
+from redis import SubkeyspaceChannel
 from sqlalchemy import false, null, true
 from werkzeug.security import generate_password_hash, check_password_hash
 from auth.login_response import loginResponse
@@ -141,46 +142,15 @@ class LoginController:
             message="請於E-mail收確認信",
             data=None)
 
-    # def game_process(self, input_user_name:str, input_user_choice:str)->LoginResponse:
-    #     if input_user_choice == "":
-    #         return LoginResponse(
-    #             template="game.html", 
-    #             error_message=f"{input_user_name} or {input_user_choice} are not current input",
-    #             extra_data=GameModule(user_name=input_user_name)
-    #         )
-    #
-    #     target_game_user:GameModule|None = None
-    #
-    #     if self.__gameUsers is not None:
-    #         target_game_user = next((t for t in self.__gameUsers if t.user_name == input_user_name), None)
-    #     else:
-    #         self.__gameUsers = []
-    #
-    #     if target_game_user is None:
-    #         target_game_user= GameModule(user_name=input_user_name, user_choice = input_user_choice)
-    #         self.__gameUsers.append(target_game_user)
-    #     else:
-    #         target_game_user.user_choice = input_user_choice
-    #
-    #     choices:list[str] = ["paper", "scissors", "tone"]
-    #     target_game_user.computer_choice = choices[ random.randint(0, 2)]
-    #     if input_user_choice == target_game_user.computer_choice:
-    #             target_game_user.result = "平手！"
-    #     elif (input_user_choice == 'stone' and target_game_user.computer_choice == 'scissors') or \
-    #          (input_user_choice == 'scissors' and target_game_user.computer_choice == 'paper') or \
-    #          (input_user_choice == 'paper' and target_game_user.computer_choice == 'stone'):
-    #         target_game_user.result = "你贏了！🎉"
-    #         target_game_user.pass_count += 1
-    #     else:
-    #         target_game_user.result = "你輸了...😢"
-    #
-    #
-    #
-    #     return LoginResponse(
-    #         template="game.html",
-    #         error_message="",
-    #         extra_data=target_game_user)
-    #
-    #
-    #
-    #
+    def check_reset_id(self, user:str, reset_id:int)->loginResponse:
+        assert self.__rds is not None, "__rds should be init"
+        rds_r = self.__rds.get_reset_user_data(user=user)
+
+        if not rds_r:
+            return loginResponse(
+                success=False,
+                message="無重設資料",
+                data=None)
+
+
+

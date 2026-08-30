@@ -1,4 +1,5 @@
 import redis
+from typing import Any
 from modules.redis_module import RedisClient as redisC, RedisSetting
 from modules.sql_module import UserModule
 
@@ -16,6 +17,16 @@ class LoginRedisProcess:
             decode_responses=True,
             db = 0
         ))
+
+    def get_reset_user_data(self, user:str) ->dict[str,Any] | None:
+        assert self.__redis is not None
+        r = self.__redis.get_connection()
+        data:dict[str, Any] = r.hgetall(f"reset:auth:{user}")
+
+        if not data:
+            return None
+
+        return data
 
     def reset_password_number(self, user:UserModule, number:int)->tuple[bool, str]:
         assert self.__redis is not None
