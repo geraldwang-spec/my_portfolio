@@ -18,10 +18,10 @@ class LoginRedisProcess:
             db = 0
         ))
 
-    def get_reset_user_data(self, user:str) ->dict[str,Any] | None:
+    def get_reset_user_data(self, userId:int) ->dict[str,Any] | None:
         assert self.__redis is not None
         r = self.__redis.get_connection()
-        data:dict[str, Any] = r.hgetall(f"reset:auth:{user}")
+        data:dict[str, Any] = r.hgetall(f"reset:auth:{userId}")
 
         if not data:
             return None

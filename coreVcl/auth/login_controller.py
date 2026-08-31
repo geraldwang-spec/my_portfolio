@@ -33,7 +33,7 @@ class LoginController:
         self.__db_m = None
         self.__userProcess = None
         self.__gameUsers = []
-        self.__vcl_tunnel_url = "https://best-group-hunter-medicines.trycloudflare.com/"
+        self.__vcl_tunnel_url = "https://driven-sale-ease-commissions.trycloudflare.com/"
         self.__rds = None
 
     def init_core(self)->None:
@@ -144,13 +144,34 @@ class LoginController:
 
     def check_reset_id(self, user:str, reset_id:int)->loginResponse:
         assert self.__rds is not None, "__rds should be init"
-        rds_r = self.__rds.get_reset_user_data(user=user)
+        assert self.__userProcess is not None, "__userProcess should be init"
+        user_c:UserModule | None = self.__userProcess.get_user_by_username(username=user)
+
+        if not user_c:
+            return loginResponse(
+                success=False,
+                message="輸入使用者錯誤",
+                data=None
+            )
+
+        rds_r = self.__rds.get_reset_user_data(userId=user_c.id)
 
         if not rds_r:
             return loginResponse(
                 success=False,
-                message="無重設資料",
+                message="超過重設時間",
                 data=None)
+
+        if rds_r["number"] != reset_id:
+            return loginResponse(
+                success=False,
+                message="重設失敗，請在重新設定",
+                data=None)
+
+        return loginResponse(
+            success=True,
+            message="",
+            data=None)
 
 
 

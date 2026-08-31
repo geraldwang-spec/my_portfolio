@@ -5,6 +5,7 @@ from flask import Flask, Blueprint, jsonify, render_template, request
 from sqlalchemy.util import methods_equivalent
 from auth.login_controller import LoginController as loginC, user
 from auth.login_response import loginResponse
+from modules.utils import UtilsTools
 
 def create_auth_bp(loginCore:loginC)->Blueprint:
     auth_bp = Blueprint('auth', __name__, url_prefix="/auth")
@@ -113,8 +114,21 @@ def create_auth_bp(loginCore:loginC)->Blueprint:
 
     @auth_bp.route('/reset_passwd')
     def reset_passwd_by_user():
-        return render_template(
-            template_name_or_list="reset_passwd.html"
-        )
+        user = request.args.get("user","")
+        result_ok, resetId = UtilsTools.try_parse_int(request.args.get("resetId",""))
+
+        if not result_ok:
+            return loginResponse(
+                success=False,
+                message="重設錯誤請重設",
+                data=None)
+         
+        res:loginResponse = loginCore.check_reset_id(
+            user=user,
+            reset_id=resetId)
+
+        if not res.success:
+            return render_template(template_name_or_list="error.html", error_message=res.message)
+        return render_template("index.html")
 
     return auth_bp

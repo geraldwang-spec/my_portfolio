@@ -48,7 +48,7 @@ class MailProcess:
         #  郵件內容
         # msg_body = 'Hey, I am mail body!'
         # 也可以利用html做內容
-        msg_html:str = f"<h1>Reset Password</h1><p>Hey, this is reset mail. <br>Please click <a href=\"{self.tunnel_url}auth/reset_passwd\">Here</a><br>Please enter reset ID <b>{reset_nu}</b></p>"
+        msg_html:str = f"<h1>Reset Password</h1><p>Hey, this is reset mail. <br>Please click <a href=\"{self.tunnel_url}auth/reset_passwd?user={user.username}&resetId={reset_nu}\">Here</a></p>"
         msg = Message(subject=msg_title,
                       sender=msg_sender,
                       recipients=msg_recipients)
