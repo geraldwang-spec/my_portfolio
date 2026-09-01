@@ -90,6 +90,11 @@ body {
   pointer-events: auto;
 }
 
+.auth-card[data-view="reset-pw"] .panel--reset-pw {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* .panel--login { */
 /*   opacity: 1; */
 /*   transform: translateY(0); */

@@ -33,7 +33,7 @@ class LoginController:
         self.__db_m = None
         self.__userProcess = None
         self.__gameUsers = []
-        self.__vcl_tunnel_url = "https://driven-sale-ease-commissions.trycloudflare.com/"
+        # self.__vcl_tunnel_url = "https://img-models-basin-changing.trycloudflare.com/"
         self.__rds = None
 
     def init_core(self)->None:
@@ -47,6 +47,7 @@ class LoginController:
             MAIL_USERNAME=os.environ.get("MAIL_USERNAME"),
             MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD")
         )
+        self.__vcl_tunnel_url = os.environ.get("VCL_TUNNEL")
         self.__mailproc = mailp(self.app, _tunnel_url=self.__vcl_tunnel_url)
         # self.__db_m = DatabaseManager()
         self.__db_m = DatabaseManager(db_url="mysql+pymysql://services:password@mariadb_db:3306/vision_db")
@@ -162,7 +163,7 @@ class LoginController:
                 message="超過重設時間",
                 data=None)
 
-        if rds_r["number"] != reset_id:
+        if int(rds_r["number"]) != reset_id:
             return loginResponse(
                 success=False,
                 message="重設失敗，請在重新設定",

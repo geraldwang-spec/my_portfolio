@@ -1,11 +1,12 @@
-from this import d
 from typing import Any
 from webbrowser import get
-from flask import Flask, Blueprint, jsonify, render_template, request
+from flask import Flask, Blueprint, jsonify, render_template, request, session
+from sqlalchemy.sql.util import surface_selectables
 from sqlalchemy.util import methods_equivalent
 from auth.login_controller import LoginController as loginC, user
 from auth.login_response import loginResponse
 from modules.utils import UtilsTools
+
 
 def create_auth_bp(loginCore:loginC)->Blueprint:
     auth_bp = Blueprint('auth', __name__, url_prefix="/auth")
@@ -116,19 +117,43 @@ def create_auth_bp(loginCore:loginC)->Blueprint:
     def reset_passwd_by_user():
         user = request.args.get("user","")
         result_ok, resetId = UtilsTools.try_parse_int(request.args.get("resetId",""))
+        print(f"DEBUG -> result_ok: {result_ok}, type:{type(result_ok)}, resetId: {resetId}, type: {type(resetId)}")
 
         if not result_ok:
             return loginResponse(
                 success=False,
                 message="重設錯誤請重設",
                 data=None)
-         
+
         res:loginResponse = loginCore.check_reset_id(
             user=user,
             reset_id=resetId)
 
         if not res.success:
             return render_template(template_name_or_list="error.html", error_message=res.message)
-        return render_template("index.html")
+        session["reset_user"] = user
+        return render_template("reset_passwd.html")
+
+    @auth_bp.route('/renew_password', methods=['POST'])
+    def renew_passwd():
+        current_user = session.get("reset_user", "")
+        if not current_user:
+            return loginResponse(
+                success=False,
+                message="重設失敗請在重設",
+                data=None).to_response()
+
+
+
+        print(f"{current_user}")
+        return loginResponse(
+            success=False,
+            message="Test",
+            data=None).to_response()
+
+    @auth_bp.route('/test')
+    def webTest():
+        return render_template("reset_passwd.html")
+
 
     return auth_bp

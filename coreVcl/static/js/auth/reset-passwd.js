@@ -4,7 +4,13 @@ function initResetPasswordSubmit() {
 
   form.addEventListener('submit', function(event) {
     event.preventDefault();
-    submitForm(form, '/auth/reset-password', function() {
+    submitForm(form, '/auth/renew_password', function(result) {
+      if (!result.success) {
+
+        console.log("test");
+        alert(result.message);
+        console.log("test");
+      }
       window.location.href = '/auth/login2';
     });
   });
@@ -12,4 +18,5 @@ function initResetPasswordSubmit() {
 
 document.addEventListener('DOMContentLoaded', function() {
   initResetPasswordSubmit();
+  initPasswordMatch('reset-pw-password', 'reset-pw-repeat');
 });
