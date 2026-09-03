@@ -144,16 +144,28 @@ def create_auth_bp(loginCore:loginC)->Blueprint:
                 data=None).to_response()
 
 
+        data = request.get_json()
+        if not isinstance(data, dict):
+            return loginResponse(
+                success=False,
+                message="無效JSON格式",
+                data=None
+            ).to_response()
 
-        print(f"{current_user}")
-        return loginResponse(
-            success=False,
-            message="Test",
-            data=None).to_response()
+        passwd = data.get('reset-pw-password')
+        repeat = data.get('reset-pw-repeat')
+
+        res:loginResponse = loginCore.change_user_password(current_user, passwd, repeat)
+
+        if not res.success:
+            return res.to_response()
+
+        session.pop("reset_user", None)
+
+        return res.to_response()
 
     @auth_bp.route('/test')
     def webTest():
         return render_template("reset_passwd.html")
-
 
     return auth_bp

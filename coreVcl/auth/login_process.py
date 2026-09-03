@@ -72,6 +72,23 @@ class UserData:
                 print(f"Update mail ready db failed: {e}")
                 return False
 
+    def update_password_by_user(self, user:str, pwdHash:str)->bool:
+        with self._db_m.get_session() as session:
+            try:
+                stmt = select(UserModule).where(UserModule.username == user)
+                userM = session.scalars(stmt).first()
+                if not userM:
+                    print(f"can't find user = {user}")
+                    return False
+                
+                userM.passwd = pwdHash
+                session.commit()
+                return True
+            except SQLAlchemyError as e:
+                session.rollback()
+                print(f"Update passwd fail: {e}")
+                return False
+
 
 
 

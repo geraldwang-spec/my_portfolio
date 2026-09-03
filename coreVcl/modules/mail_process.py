@@ -10,11 +10,11 @@ class MailProcess:
     _mtqoo:Thread|None
     tunnel_url:str|None
 
-    def __init__(self, app:Flask, _tunnel_url:str = "") -> None:
+    def __init__(self, app:Flask, tunnel_url:str = "") -> None:
         self.mail = Mail(app)
         self.app = app
         self._mtqoo = None
-        self.tunnel_url = _tunnel_url
+        self.tunnel_url = tunnel_url
         
     def start_mail_thread(self, user:UserModule)->None:
         msg_title = 'Hello It is checking mail'

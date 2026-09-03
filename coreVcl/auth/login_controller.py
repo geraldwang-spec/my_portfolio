@@ -33,7 +33,7 @@ class LoginController:
         self.__db_m = None
         self.__userProcess = None
         self.__gameUsers = []
-        # self.__vcl_tunnel_url = "https://img-models-basin-changing.trycloudflare.com/"
+        self.__vcl_tunnel_url = ""
         self.__rds = None
 
     def init_core(self)->None:
@@ -48,7 +48,7 @@ class LoginController:
             MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD")
         )
         self.__vcl_tunnel_url = os.environ.get("VCL_TUNNEL")
-        self.__mailproc = mailp(self.app, _tunnel_url=self.__vcl_tunnel_url)
+        self.__mailproc = mailp(self.app, tunnel_url=self.__vcl_tunnel_url)
         # self.__db_m = DatabaseManager()
         self.__db_m = DatabaseManager(db_url="mysql+pymysql://services:password@mariadb_db:3306/vision_db")
         self.__db_m.init_db()
@@ -64,9 +64,7 @@ class LoginController:
         if check_password_hash( user.passwd, passwd) == False:
             return loginResponse(success=False, message=f"帳號或密碼錯誤", data=None)
 
-        print(f"mail_check_number {user.mail_check_number}")
-
-        if user.mail_check_number != 0:
+        if not user.mail_ready:
             return loginResponse(success=False, message=f"E-mail未確認", data=None)
 
         return loginResponse(success=True, message="", data=user.username)
@@ -173,6 +171,29 @@ class LoginController:
             success=True,
             message="",
             data=None)
+        
+    def change_user_password(self, user:str, passwd:str, repeat:str)->loginResponse:
+        assert self.__userProcess is not None, "__userProcess should be init"
+        if passwd != repeat:
+            return loginResponse(
+                success=False,
+                message="密碼不一致",
+                data=None)
+
+        
+        if not self.__userProcess.update_password_by_user(user, generate_password_hash(passwd)):
+            return loginResponse(
+                success=False,
+                message="更新密碼失敗，請重新設定",
+                data=None)
+
+        return loginResponse(
+            success=True,
+            message="",
+            data =None)
+
+
+
 
 
 
