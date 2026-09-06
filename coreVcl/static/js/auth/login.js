@@ -4,7 +4,7 @@ function initLoginSubmit() {
 
   form.addEventListener('submit', function(event) {
     event.preventDefault();
-    submitForm(form, '/auth/login2', function(result) {
+    submitForm(form, '/auth/login', function(result) {
       window.location.href = '/';
     });
   });
@@ -17,7 +17,7 @@ function initRegisterSubmit() {
   form.addEventListener('submit', function(event) {
     event.preventDefault()
     submitForm(form, '/auth/register', function(result) {
-      window.location.href = '/auth/login2';
+      window.location.href = '/auth/login';
     });
   });
 }
@@ -32,7 +32,7 @@ function initResetSubmit() {
       if (result.success) {
         alert(result.message);
       }
-      window.location.href = '/auth/login2';
+      window.location.href = '/auth/login';
     })
   });
 }

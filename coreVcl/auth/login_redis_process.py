@@ -56,3 +56,13 @@ class LoginRedisProcess:
         _ = pipe.execute()
 
         return True
+
+    def clean_password_number(self, user:UserModule)->bool:
+        assert self.__redis is not None
+        r = self.__redis.get_connection()
+        result:int = r.delete(f"reset:auth:{user.id}")
+
+        return bool(result)
+
+
+

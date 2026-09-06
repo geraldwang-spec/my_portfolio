@@ -8,24 +8,13 @@ from auth.login_response import loginResponse
 from modules.utils import UtilsTools
 
 
-def create_auth_bp(loginCore:loginC)->Blueprint:
-    auth_bp = Blueprint('auth', __name__, url_prefix="/auth")
+def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
+    auth_bp = Blueprint(mName, __name__, url_prefix=f"/{mName}")
     
     @auth_bp.route('/login', methods=['POST', "GET"])
-    def login()->str:
+    def login():
         if request.method == "GET":
-            # current_user = session.get("user", "")
-            # return render_template("login.html", user = current_user)
-            return render_template("login.html")
-        else:
-                       # data = request.get_json()
-            return render_template("login.html")
-
-
-    @auth_bp.route('/login2', methods=['POST', "GET"])
-    def login2():
-        if request.method == "GET":
-            return render_template(template_name_or_list="login2.html")
+            return render_template(template_name_or_list=f"{mName}/login.html")
         data = request.get_json()
         if not isinstance(data, dict):
             return loginResponse(
@@ -132,7 +121,7 @@ def create_auth_bp(loginCore:loginC)->Blueprint:
         if not res.success:
             return render_template(template_name_or_list="error.html", error_message=res.message)
         session["reset_user"] = user
-        return render_template("reset_passwd.html")
+        return render_template(f"{mName}/reset_passwd.html")
 
     @auth_bp.route('/renew_password', methods=['POST'])
     def renew_passwd():
@@ -166,6 +155,6 @@ def create_auth_bp(loginCore:loginC)->Blueprint:
 
     @auth_bp.route('/test')
     def webTest():
-        return render_template("reset_passwd.html")
+        return render_template(f"{mName}/reset_passwd.html")
 
     return auth_bp

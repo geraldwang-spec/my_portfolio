@@ -11,7 +11,7 @@ function initResetPasswordSubmit() {
         alert(result.message);
         console.log("test");
       }
-      window.location.href = '/auth/login2';
+      window.location.href = '/auth/login';
     });
   });
 }
