@@ -14,16 +14,17 @@ body {
 
 .app-shell {
   display: flex;
-  min-width: 100vh
+  min-width: 100vh;
 }
 
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--panel-tine);
+  background: var(--panel-tint);
   border-right: 1px solid var(--border-color);
   writing-mode: vertical-rl;
   padding: 12px 2px;
   font-size: 12px;
+  height: 100%;
 }
 
 .context-area {
