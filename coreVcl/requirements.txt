@@ -5,8 +5,8 @@ sqlalchemy
 Flask-Mail
 pymysql
 python-dotenv
-gradio
-torch
+#gradio
+#torch
 transformers
 pydantic
 redis

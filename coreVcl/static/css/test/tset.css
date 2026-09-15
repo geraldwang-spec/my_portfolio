@@ -1,0 +1,26 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.layout {
+  display: flex;
+
+}
+
+.sidebar-left {
+  background-color: yellow;
+  flex: 0 0 200px;
+  /* flex-shrink: 0; */
+}
+
+.content {
+  background-color: pink;
+  flex: 1 1 auto;
+}
+
+.sidebar-right {
+  background-color: aqua;
+  flex: 0 0 150px;
+}

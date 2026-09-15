@@ -1,4 +1,10 @@
 const navConfig = {
+  "home-page": {
+    label: "Home",
+    sidebarItems: [
+      { id: "dashboard", label: "dashboard" }
+    ]
+  },
   "live-manager": {
     label: "Live Manager",
     sidebarItems: [

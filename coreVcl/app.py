@@ -1,5 +1,5 @@
 import threading
-import gradiolib.video_gradio as vgdio
+# import gradiolib.video_gradio as vgdio
 from flask import Blueprint, Flask, render_template, request
 from auth.auth_api import create_auth_bp
 from auth.login_controller import LoginController as loginC
@@ -17,6 +17,10 @@ def create_app()->Flask:
     @app.route('/')
     def index_html():
         return render_template('index.html')
+
+    @app.route("/test")
+    def test():
+        return render_template('test/test.html')
 
     return app
 

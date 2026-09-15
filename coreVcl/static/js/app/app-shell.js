@@ -24,20 +24,24 @@ function renderSidebar(mode) {
   });
 
   if (config.sidebarItems.length > 0) {
-    switchContent(sidebarItems[0].id);
+    switchContent(config.sidebarItems[0].id);
   }
 }
 
 function initTopNav() {
-  const modeButtons = document.querySelector(".nav-mode-btn");
+  const modeButtons = document.querySelectorAll(".nav-mode-btn");
   modeButtons.forEach(function(btn) {
     btn.addEventListener('click', function() {
       currentMode = btn.dataset.mode;
+      renderSidebar(currentMode);
 
     });
   });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  initTopNav();
+  currentMode = 'home-page';
+  renderSidebar(currentMode);
 
 });
