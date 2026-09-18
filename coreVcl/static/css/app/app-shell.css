@@ -20,8 +20,25 @@ body {
 
 .top-nav {
   display: flex;
-  padding: 16px 24px;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border-color);
+}
+
+.logo-btn {
+  background-color: yellow;
+  flex: 0 0 100px;
+}
+
+.nav-item {
+  background-color: aqua;
+  flex: 1 1 auto;
+}
+
+.top-nav-utility {
+  background: red;
+  flex: 0 1 200px;
 }
 
 .body-area {
