@@ -1,0 +1,108 @@
+/* =========================================================
+ * cie1931.css — CIE 1931 畫面（進入此畫面時才載入）
+ * ========================================================= */
+.cie-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.cie-col { min-width: 0; }
+.cam-box {
+  position: relative; aspect-ratio: 4 / 3; overflow: hidden;
+  background: #000; border: 1px solid var(--line); cursor: crosshair;
+}
+.cam-box video, .cam-box .demo-canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; display: block; }
+.reticle {
+  position: absolute; width: 46px; height: 46px; transform: translate(-50%, -50%); pointer-events: none;
+  --b: linear-gradient(var(--cyan), var(--cyan));
+  background:
+    var(--b) top left / 12px 2px, var(--b) top left / 2px 12px,
+    var(--b) top right / 12px 2px, var(--b) top right / 2px 12px,
+    var(--b) bottom left / 12px 2px, var(--b) bottom left / 2px 12px,
+    var(--b) bottom right / 12px 2px, var(--b) bottom right / 2px 12px;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, .9)) drop-shadow(0 0 6px var(--cyan-glow));
+  transition: left .15s var(--ease), top .15s var(--ease);
+}
+.reticle::after { content: ""; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px; background: var(--cyan); }
+.cam-tag {
+  position: absolute; left: 10px; top: 10px; padding: 3px 8px; white-space: pre;
+  font: 11px var(--f-mono); color: var(--cyan); background: rgba(7, 10, 13, .75); border: 1px solid rgba(0, 229, 255, .3);
+}
+.cam-empty {
+  position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 4px;
+  padding: 24px; text-align: center; cursor: default;
+  background: radial-gradient(circle at 50% 40%, var(--carbon-2), var(--carbon-0) 70%);
+}
+.cam-empty .empty-icon { margin-bottom: 10px; }
+.cam-empty h2 { margin: 0; font: 600 18px var(--f-display); }
+.cam-empty p { margin: 4px 0 14px; max-width: 360px; color: var(--muted); font-size: 13px; }
+.cam-empty-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.cam-empty .form-error { margin: 12px 0 0; max-width: 380px; }
+.chart-box { position: relative; aspect-ratio: 640 / 580; background: var(--carbon-0); border: 1px solid var(--line); }
+.chart-box canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 13px; color: var(--muted); }
+.legend label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.legend input { accent-color: var(--cyan); margin: 0; }
+.legend i { display: inline-block; width: 16px; height: 2px; }
+.legend .trail-key { height: 6px; width: 16px; background: radial-gradient(circle, var(--cyan) 1.5px, transparent 2px) 0 0 / 5px 6px repeat-x; }
+.readout-main { display: flex; gap: 14px; align-items: center; }
+.swatch {
+  width: 60px; height: 60px; flex-shrink: 0; border: 1px solid var(--line);
+  background: repeating-linear-gradient(45deg, var(--carbon-3) 0 6px, var(--carbon-2) 6px 12px);
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 78% 100%, 0 100%);
+}
+.readout-big { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.readout-big dd { font-size: 16px; color: var(--cyan); }
+.readout-grid { display: grid; gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.readout-grid div { display: flex; justify-content: space-between; gap: 10px; }
+.readout-grid dd { font-size: 12px; text-align: right; overflow-wrap: anywhere; }
+.wb-svg { position: absolute; width: 0; height: 0; }
+.wb-manual { margin-top: 4px; }
+.range input.temp-range { background: linear-gradient(90deg, #ff7a2e, #ffc98f 30%, #fff4e6 55%, #dde9ff 75%, #8fb6ff); }
+.range input.tint-range { background: linear-gradient(90deg, #3ddc84, #d9d9d9 50%, #e25fd0); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.presets .chip { padding: 5px 9px; font-size: 12px; }
+.xy-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; align-items: end; }
+.xy-inputs label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.xy-inputs label span { font-size: 11px; color: var(--muted); }
+.xy-inputs .wide { grid-column: 1 / -1; }
+.xy-inputs input {
+  width: 100%; height: 36px; padding: 0 10px; font: 13px var(--f-mono); color: var(--text);
+  background: var(--carbon-0); border: 1px solid var(--line); outline: 0; border-radius: 0;
+}
+.xy-inputs input[type="text"] { font-family: var(--f-body); }
+.xy-inputs input:focus { border-color: rgba(0, 229, 255, .6); }
+.xy-inputs .ghost-btn { grid-column: 1 / -1; justify-content: center; }
+.point-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 236px; overflow-y: auto; }
+.point-list li { display: flex; align-items: center; gap: 10px; padding: 6px 4px 6px 10px; background: var(--carbon-1); border: 1px solid var(--line); }
+.point-list .dot { width: 12px; height: 12px; flex-shrink: 0; border: 1px solid rgba(255, 255, 255, .7); }
+.pt-info { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.pt-info b { font-weight: 500; font-size: 13px; }
+.pt-info small { font: 11px var(--f-mono); color: var(--muted); }
+.point-list .close-btn { width: 28px; height: 28px; }
+.point-list .close-btn svg { width: 16px; height: 16px; }
+.point-list .empty-row { display: block; padding: 10px; font-size: 12px; color: var(--muted); background: none; border-style: dashed; }
+@media (max-width: 1180px) {
+  .cie-grid { grid-template-columns: 1fr; }
+}
+.presets .chip[aria-pressed="true"] { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+
+/* 標記點專案 */
+.project-bar { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.project-select { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.project-select span, .project-edit label span { font-size: 11px; color: var(--muted); }
+.project-select select {
+  width: 100%; height: 36px; padding: 0 8px; font-size: 13px; color: var(--text);
+  background: var(--carbon-0); border: 1px solid var(--line); border-radius: 0;
+}
+.project-select select:focus { outline: 0; border-color: rgba(0, 229, 255, .6); }
+.project-tools { display: flex; gap: 4px; }
+.project-edit { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; padding: 10px; background: var(--carbon-1); border: 1px solid rgba(0, 229, 255, .35); }
+.project-edit label { display: flex; flex-direction: column; gap: 4px; }
+.project-edit input {
+  height: 36px; padding: 0 10px; font-size: 13px; color: var(--text);
+  background: var(--carbon-0); border: 1px solid var(--line); outline: 0; border-radius: 0;
+}
+.project-edit input:focus { border-color: rgba(0, 229, 255, .6); }
+.project-edit-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.project-edit-actions .primary-btn { padding: 7px 14px; font-size: 13px; }
+.project-edit-actions .ghost-btn { padding: 6px 12px; }
+.project-edit .form-error { margin: 0; }
+.list-meta { margin: -6px 0 10px; font-size: 12px; color: var(--muted); }

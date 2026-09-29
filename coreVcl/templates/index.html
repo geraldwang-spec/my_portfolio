@@ -1,51 +1,134 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login</title>
-
-  <!-- 1. 補上 Roboto 字體 -->
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Exo+2:wght@300;400;500&display=swap">
-
-  <!-- 2. 補上 Font Awesome 圖標庫 -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
-  <link href="/static/css/app/app-shell.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Neon Carbon · AI Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/layout.css">
+  <link rel="stylesheet" href="/static/css/chat.css">
+  <link rel="stylesheet" href="/static/css/dialog.css">
+  <!-- 各工具畫面的樣式由畫面模組自行載入，例如 js/views/cie1931/cie1931.css -->
 </head>
-
 <body>
-  <div class="app-shell">
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="backdrop" id="backdrop" aria-hidden="true"></div>
 
-    <header class="top-nav">
-      <div class="logo-btn">
-        <button class="nav-mode-btn" type="button" data-mode="home-page">logo</button>
+  <div class="app" id="app">
+    <!-- ===== Sidebar（主題） ===== -->
+    <aside class="sidebar" id="sidebar" aria-label="主題與功能選單">
+      <div class="sidebar-brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-text">
+          <strong id="brandName"></strong>
+          <small id="brandTagline"></small>
+        </span>
+        <button class="collapse-btn" id="collapseBtn" aria-label="收合側邊欄" aria-expanded="true" title="收合側邊欄">
+          <i data-icon="sidebar"></i>
+        </button>
       </div>
-      <div class="nav-item">
-        <button class="nav-mode-btn" type="button" data-mode="live-manager">live-manager</button>
-        <button class="nav-mode-btn" type="button" data-mode="video-tools">video-tools</button>
+
+      <nav class="theme-list" id="themeList" aria-label="主題"></nav>
+
+      <div class="sidebar-foot">
+        <div class="sys-status">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="label" id="apiMode"></span>
+        </div>
+        <button class="foot-item" id="settingsBtn" data-tip="設定">
+          <i data-icon="settings"></i><span class="label">設定</span>
+        </button>
+        <div id="accountSlot"></div>
       </div>
-      <div class="top-nav-utility">
-        <button type="">設定</button>
-        <button type="">login</button>
-      </div>
-    </header>
+    </aside>
 
-    <div class="body-area">
-      <aside class="sidebar">
+    <!-- ===== Main ===== -->
+    <div class="main">
+      <header class="hud">
+        <button class="icon-btn mobile-only" id="menuBtn" aria-label="開啟選單">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="crumbs" id="crumbs" aria-label="目前位置"></div>
+        <div class="hud-meta">
+          <span class="uptime" id="uptime" title="本次工作階段時間">00:00:00</span>
+        </div>
+      </header>
 
-      </aside>
-      <main class="content-area">
+      <!-- ===== Chat ===== -->
+      <section class="chat panel" id="chatView" aria-label="AI 對話">
+        <div class="chat-head">
+          <div>
+            <h1 id="chatTitle"></h1>
+            <p id="chatSub"></p>
+          </div>
+          <button class="ghost-btn" id="clearBtn">
+            <svg viewBox="0 0 24 24"><path d="M5 7h14M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+            <span>清除對話</span>
+          </button>
+        </div>
 
-      </main>
+        <div class="messages" id="messages" aria-live="polite"></div>
 
+        <form class="composer" id="composer" autocomplete="off">
+          <span class="prompt-sign" aria-hidden="true">&gt;</span>
+          <label for="input" class="sr-only">輸入訊息</label>
+          <textarea id="input" rows="1"></textarea>
+          <button type="submit" class="send-btn" id="sendBtn" aria-label="送出">
+            <svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2.5-6.5L4 12z"/></svg>
+          </button>
+        </form>
+        <p class="hint">Enter 送出・Shift + Enter 換行</p>
+      </section>
+
+      <!-- ===== 工具畫面（nav 項目設定 type 時使用） ===== -->
+      <section class="tool-view panel" id="toolView" hidden></section>
     </div>
-
   </div>
-  <script src="static/js/app/nav-config.js"></script>
-  <script src="static/js/app/app-shell.js"></script>
-  <script src="static/js/common.js"></script>
-</body>
 
+  <!-- ===== 設定視窗 ===== -->
+  <dialog class="modal" id="settingsDlg" aria-labelledby="settingsTitle">
+    <form class="modal-body panel" id="settingsForm" method="dialog">
+      <div class="modal-head">
+        <h2 id="settingsTitle">設定</h2>
+        <button class="close-btn" value="cancel" formnovalidate aria-label="關閉"><i data-icon="close"></i></button>
+      </div>
+      <label class="field">
+        <span>回覆來源</span>
+        <select name="mode">
+          <option value="mock">模擬回覆（不需後端）</option>
+          <option value="openai">OpenAI 相容 API</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>API 端點</span>
+        <input name="endpoint" type="text" placeholder="/api/chat">
+      </label>
+      <label class="field">
+        <span>模型</span>
+        <input name="model" type="text" placeholder="gpt-4o-mini">
+      </label>
+      <div class="field-row">
+        <div>
+          <span class="field-title">對話紀錄</span>
+          <small>清除所有主題與選單中的對話，無法復原。</small>
+        </div>
+        <button type="button" class="ghost-btn danger" id="clearAllBtn">清除所有對話</button>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost-btn" value="cancel" formnovalidate>取消</button>
+        <button class="primary-btn" value="save">儲存設定</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ===== 登入視窗（登入 / 註冊 / 忘記密碼 / 重設密碼），內容由 components/auth-dialog.js 產生 ===== -->
+  <dialog class="modal auth-modal" id="authDlg" aria-labelledby="authTitle-login"></dialog>
+
+  <!-- 程式進入點：其他 JS 由 main.js 透過 import 自動載入 -->
+  <script type="module" src="/static/js/main.js"></script>
+</body>
 </html>

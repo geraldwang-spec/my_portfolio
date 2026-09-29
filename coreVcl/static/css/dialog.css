@@ -1,0 +1,76 @@
+/* =========================================================
+ * dialog.css — 設定視窗、登入視窗（登入 / 註冊 / 忘記密碼 / 重設密碼）
+ * ========================================================= */
+
+/* ===== Modal ===== */
+.modal { padding: 0; border: 0; background: transparent; color: var(--text); width: min(440px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow: visible; }
+.modal::backdrop { background: rgba(3, 6, 8, .72); backdrop-filter: blur(3px); }
+.modal[open] { animation: rise .25s var(--ease); }
+.modal-body { display: flex; flex-direction: column; gap: 16px; padding: 22px 24px 24px; background: var(--carbon-1); }
+.modal-head { display: flex; align-items: center; justify-content: space-between; }
+.modal-head h2 { margin: 0; font: 600 20px var(--f-display); }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > span, .field-title { font-size: 13px; color: var(--muted); }
+.field input, .field select {
+  height: 42px; padding: 0 12px; font: inherit; font-size: 14px; color: var(--text);
+  background: var(--carbon-0); border: 1px solid var(--line); outline: 0; border-radius: 0;
+  transition: border-color .2s, box-shadow .2s;
+}
+.field input:focus, .field select:focus { border-color: rgba(0, 229, 255, .6); box-shadow: 0 0 0 3px var(--cyan-dim); }
+.field-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.field-row small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.field-row .ghost-btn { flex-shrink: 0; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+
+/* ===== 登入視窗 ===== */
+.auth-view { display: flex; flex-direction: column; gap: 14px; animation: rise .25s var(--ease); }
+.auth-title { display: flex; align-items: center; gap: 6px; }
+.auth-back {
+  display: grid; place-items: center; width: 30px; height: 30px; margin-left: -6px;
+  color: var(--muted); transition: color .2s;
+}
+.auth-back:hover { color: var(--cyan); }
+.auth-back svg { width: 18px; height: 18px; }
+
+.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--line); margin-top: -4px; }
+.auth-tabs button {
+  position: relative; padding: 10px 0; font: 600 14px var(--f-display); letter-spacing: .06em;
+  color: var(--muted); transition: color .2s;
+}
+.auth-tabs button:hover { color: var(--text); }
+.auth-tabs button[aria-selected="true"] { color: var(--cyan); }
+.auth-tabs button[aria-selected="true"]::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+  background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
+}
+
+.auth-desc { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.6; }
+.auth-desc b { color: var(--text); font-weight: 500; word-break: break-all; }
+.auth-desc.small { font-size: 12px; }
+.center { text-align: center; }
+.auth-row { display: flex; justify-content: flex-end; margin-top: -6px; }
+.text-link { padding: 2px 0; font-size: 13px; color: var(--muted); transition: color .2s; }
+.text-link:hover { color: var(--cyan); text-decoration: underline; text-underline-offset: 3px; }
+.text-link.center { align-self: center; }
+
+.auth-notice {
+  margin: 0; padding: 10px 12px; font-size: 13px; color: var(--text);
+  background: var(--cyan-dim); border-left: 2px solid var(--cyan);
+}
+
+.auth-hero {
+  display: grid; place-items: center; width: 72px; height: 72px; margin: 4px auto 0;
+  color: var(--cyan); border: 1px solid rgba(0, 229, 255, .4); background: var(--cyan-dim);
+  clip-path: polygon(25% 0, 100% 0, 100% 75%, 75% 100%, 0 100%, 0 25%);
+}
+.auth-hero svg { width: 34px; height: 34px; filter: drop-shadow(0 0 6px var(--cyan-glow)); }
+.auth-hero.small { width: 56px; height: 56px; }
+.auth-hero.small svg { width: 26px; height: 26px; }
+.auth-hero.warn { color: #ffb020; border-color: rgba(255, 176, 32, .45); background: rgba(255, 176, 32, .1); }
+.auth-hero.warn svg { filter: none; }
+
+.auth-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.auth-actions > * { justify-content: center; }
+.auth-actions .ghost-btn:disabled { opacity: .5; cursor: not-allowed; }
+.auth-modal .form-error { margin: -4px 0 0; }
+.auth-modal .primary-btn.block { width: 100%; padding: 11px 18px; }
