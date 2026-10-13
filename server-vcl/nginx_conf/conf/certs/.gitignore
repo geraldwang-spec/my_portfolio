@@ -1,0 +1,3 @@
+# 憑證與私鑰只在本機產生（server-vcl/gen-selfsigned-cert.sh），永遠不進 git
+*
+!.gitignore

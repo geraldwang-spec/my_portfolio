@@ -1,35 +1,30 @@
 #!/bin/bash
 set -e
+cd "$(dirname "$0")"
 
-echo "[1/5] checking and craeting folder for local development and database ..."
-if [ ! -d "./coreVcl" ]; then
-  echo "Can't find coreVcl foler, and then auto creating ..."
-  mkdir -p ./coreVcl/templates ./coreVcl/static
-else
-  echo "coreVcl folder exist"
+echo "[1/5] checking and creating folder for local development and database ..."
+if [ ! -f ./coreVcl/app.py ]; then
+  echo "Error: Can't find ./coreVcl/app.py" >&2
+  echo "Please execute at root of repo, and complete git clone or not" >&2
+  exit 1
 fi
 
-if [ ! -d "./sqldata" ]; then
-  echo "Can't find sqldata foler, and then auto creating ..."
-  mkdir -p ./sqldata
-else
-  echo "sqldata folder exist"
-fi
+for d in ./sqldata ./redis_data; do
+  if [ ! -d "$d" ]; then
+    echo "Can't find $d, creating..."
+    mkdir -p "$d"
+  else
+    echo "$d exists"
+  fi
+done
 
-if [ ! -d "./redis_data" ]; then
-  echo "Can't find redis_data foler, and then auto creating ..."
-  mkdir -p ./redis_data
-else
-  echo "redis_data folder exist"
-fi
+# echo "[2/5] change user and group"
+# sudo chown -R $(whoami):$(whoami) ./coreVcl ./sqldata ./redis_data 2>/dev/null
 
-echo "[2/5] change user and group"
-sudo chown -R $(whoami):$(whoami) ./coreVcl ./sqldata ./redis_data 2>/dev/null
-
-echo "[3/5] login redhat"
+echo "[2/5] login redhat"
 podman login registry.redhat.io
 
-echo "[4/5] pull container image..."
+echo "[3/5] pull container image..."
 podman pull registry.redhat.io/rhel9/redis-7:latest
 podman pull registry.redhat.io/ubi8/nginx-122:latest
 podman pull docker.io/cloudflare/cloudflared:latest
@@ -38,6 +33,8 @@ podman pull registry.access.redhat.com/ubi9/ubi
 
 # echo "[4/5] initial podman network and container structure ..."
 # podman-compose -p vcl up --no-start
+echo "[4/5] checking certs..."
+./server-vcl/gen-selfsigned-cert.sh
 
 echo "[5/5] launch all server ..."
 # podman-compose -p vcl start
