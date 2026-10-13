@@ -1,1 +1,6 @@
 coreVcl/gradiolib/__pycache__/
+coreVcl/auth/__pycache__/
+coreVcl/modules/__pycache__/
+.env
+.env.*
+!.env.example
