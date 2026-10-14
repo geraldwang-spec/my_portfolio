@@ -1,5 +1,3 @@
-version: 3.8
-
 networks:
   frontend:
     driver: bridge
@@ -15,9 +13,9 @@ services:
     image: registry.redhat.io/rhel9/redis-7:latest
     container_name: vclredis
     environment: 
-      - REDIS_PASSWORD=vclpasswd
+      - REDIS_PASSWORD=${REDIS_PASSWORD:?REDIS_PASSWORD not set in .env}
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - ./redis_data:/var/lib/redis/data:Z,U
     networks:
@@ -27,12 +25,12 @@ services:
     image: registry.redhat.io/rhel9/mariadb-1011
     container_name: mariadb_db
     ports:
-      - "3306:3306"   # for development
+      - "127.0.0.1:3306:3306" 
     environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword
-      - MYSQL_USER=services
-      - MYSQL_PASSWORD=password
-      - MYSQL_DATABASE=vision_db
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:? MYSQL_ROOT_PASSWORD not set}
+      - MYSQL_USER=${MYSQL_USER:? MYSQL_USER not set}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:? MYSQL_PASSWORD not set}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:? MYSQL_DATABASE not set}
     volumes:
       - ./sqldata/:/var/lib/mysql:Z,U
     networks:
@@ -45,13 +43,19 @@ services:
     image: localhost/my-ubi-python:latest
     container_name: core_pj
     environment:
-      - core_project=core_project
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY not set}
+      - DATABASE_URL=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mariadb_db:3306/${MYSQL_DATABASE}
+      - REDIS_HOST=vclredis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MAIL_USERNAME=${MAIL_USERNAME:?MAIL_USERNAME not set}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:?MAIL_PASSWORD not set}
+      - VCL_TUNNEL=${VCL_TUNNEL:?VCL_TUNNEL not set}
     networks:
       - frontend
       - backend_redis
     userns: keep-id
     volumes:
-      - ./coreVcl:/app:Z #,U 最後到生產環境時還是需要加上
+      - ./coreVcl:/app:z #,U 最後到生產環境時還是需要加上
     command: tail -f /dev/null # ready for development
 
   vclnginx:
@@ -70,7 +74,7 @@ services:
       - ./server-vcl/nginx_conf/conf/nginx/standalone.conf:/etc/nginx/nginx.conf:Z
       - ./server-vcl/nginx_conf/conf/certs/:/etc/nginx/certs:Z,ro 
       # - ./coreVcl/templates/:/opt/app-root/src:Z,ro
-      - ./coreVcl/static/:/opt/app-root/src/static:Z,ro
+      - ./coreVcl/static/:/opt/app-root/src/static:z,ro
     networks:
       - frontend
     command: nginx -g "daemon off;"
