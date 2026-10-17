@@ -33,8 +33,8 @@ services:
     ports:
       - "127.0.0.1:3306:3306" 
     environment:
-      - MYSQL_USER=${MYSQL_USER:? MYSQL_USER not set}
-      - MYSQL_DATABASE=${MYSQL_DATABASE:? MYSQL_DATABASE not set}
+      - MYSQL_USER=${MYSQL_USER:?MYSQL_USER not set}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:?MYSQL_DATABASE not set}
     secrets:
       - {source: mysql_password,      type: env, target: MYSQL_PASSWORD}
       - {source: mysql_root_password, type: env, target: MYSQL_ROOT_PASSWORD}
@@ -51,9 +51,10 @@ services:
     image: localhost/my-ubi-python:latest
     container_name: core_pj
     environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE:? MYSQL_DATABASE not set}
-      - MYSQL_USER=${MYSQL_USER:? MYSQL_USER not set}
-      - REDIS_HOST=vclredis
+      - MYSQL_DATABASE=${MYSQL_DATABASE:?MYSQL_DATABASE not set}
+      - MYSQL_USER=${MYSQL_USER:?MYSQL_USER not set}
+      - REDIS_IP=${REDIS_IP:?REDIS_IP not set}
+      - MARIADB_IP=${MARIADB_IP:?MARIADB_IP not set}
       - MAIL_USERNAME=${MAIL_USERNAME:?MAIL_USERNAME not set}
     secrets:
       - secret_key
