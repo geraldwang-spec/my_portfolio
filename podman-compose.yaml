@@ -2,11 +2,14 @@ networks:
   frontend:
     driver: bridge
     ipam:
+      # ⚠️ 必須和 standalone.conf 的 set_real_ip_from 一致
       config: [{subnet: 10.101.1.0/24, gateway: 10.101.1.1}]
   backend_redis:
     driver: bridge
     ipam:
-      config: [{subnet: 10.66.0.0/24, gateway: 10.66.0.1}]
+      config:
+        - subnet: ${BACKEND_SUBNET:?BACKEND_SUBNET not set}
+          gateway: ${BACKEND_GATEWAY:?BACKEND_GATEWAY not set}
 
 services:
   vclredis:
@@ -21,7 +24,8 @@ services:
     volumes:
       - ./redis_data:/var/lib/redis/data:Z,U
     networks:
-      backend_redis: {ipv4_address: 10.66.0.3}
+      backend_redis:
+        ipv4_address: ${REDIS_IP:?REDIS_IP not set}
 
   mariadb_db:
     image: registry.redhat.io/rhel9/mariadb-1011
@@ -37,7 +41,8 @@ services:
     volumes:
       - ./sqldata/:/var/lib/mysql:Z,U
     networks:
-      backend_redis: {ipv4_address: 10.66.0.4}
+      backend_redis:
+        ipv4_address: ${MARIADB_IP:?MARIADB_IP not set} 
 
   core_pj:
     build:
@@ -53,7 +58,6 @@ services:
     secrets:
       - secret_key
       - mysql_password
-      - mysql_root_password
       - redis_password
       - mail_password
     depends_on:
@@ -88,7 +92,9 @@ services:
       - frontend
     command: nginx -g "daemon off;"
   vcl_tunnel:
-    image: docker.io/cloudflare/cloudflared:latest
+    image: docker.io/cloudflare/cloudflared:2026.10.0
+    ports:
+      - "127.0.0.1:2000:2000"
     container_name: vcl_tunnel
     depends_on:
       - vclnginx
