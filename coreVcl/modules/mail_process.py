@@ -1,22 +1,21 @@
 from flask import Flask
-from flask.config import T
 from flask_mail import Mail, Message
-from threading import Thread
 from modules.sql_module import UserModule
+from modules.Settings import public_base_url
 
 class MailProcess:
     mail: Mail
     app: Flask
-    _mtqoo:Thread|None
-    tunnel_url:str|None
 
-    def __init__(self, app:Flask, tunnel_url:str = "") -> None:
+    def __init__(self, app:Flask) -> None:
         self.mail = Mail(app)
         self.app = app
-        self._mtqoo = None
-        self.tunnel_url = tunnel_url
         
-    def start_mail_thread(self, user:UserModule)->None:
+    def send_verify_mail(self, user:UserModule)->bool:
+        base_url = self.__base_url()
+        if base_url is None:
+            return False
+
         msg_title = 'Hello It is checking mail'
         #  寄件者，若參數有設置就不需再另外設置
         msg_sender = 'Sender Mail@mail_domain.com'
@@ -26,19 +25,20 @@ class MailProcess:
         #  郵件內容
         # msg_body = 'Hey, I am mail body!'
         # 也可以利用html做內容
-        msg_html:str = f'<h1>Hey, this is verify mail. Please click <a href=\"{self.tunnel_url}/auth/mailverify?user={user.username}&mail_number={user.mail_check_number}\">this</a></h1>'
+        msg_html:str = f'<h1>Hey, this is verify mail. Please click <a href=\"{base_url}/auth/mailverify?user={user.username}&mail_number={user.mail_check_number}\">this</a></h1>'
         msg = Message(subject=msg_title,
                       sender=msg_sender,
                       recipients=msg_recipients)
         # msg.body = msg_body
         msg.html = msg_html
-    
-        #  使用多線程
-        self._mtqoo = Thread(target=self.send_async_email, args=[self.app, msg])
-        self._mtqoo.start()
-        print(f"You Send Mail by Flask-Mail Success!!")
 
-    def send_reset_mail_thread(self, user:UserModule, reset_nu:int)->None:
+        return self.__send(msg)
+
+    def send_reset_mail(self, user:UserModule, reset_nu:int)->bool:
+        base_url = self.__base_url()
+        if base_url is None:
+            return False
+
         msg_title = 'Hello It is reset Mail'
         #  寄件者，若參數有設置就不需再另外設置
         msg_sender = 'Sender Mail@mail_domain.com'
@@ -48,25 +48,29 @@ class MailProcess:
         #  郵件內容
         # msg_body = 'Hey, I am mail body!'
         # 也可以利用html做內容
-        msg_html:str = f"<h1>Reset Password</h1><p>Hey, this is reset mail. <br>Please click <a href=\"{self.tunnel_url}auth/reset_passwd?user={user.username}&resetId={reset_nu}\">Here</a></p>"
+        msg_html:str = f"<h1>Reset Password</h1><p>Hey, this is reset mail. <br>Please click <a href=\"{base_url}/auth/reset_passwd?user={user.username}&resetId={reset_nu}\">Here</a></p>"
         msg = Message(subject=msg_title,
                       sender=msg_sender,
                       recipients=msg_recipients)
         # msg.body = msg_body
         msg.html = msg_html
-    
-        #  使用多線程
-        self._mtqoo = Thread(target=self.send_async_email, args=[self.app, msg])
-        self._mtqoo.start()
+
+        return self.__send(msg)
+
+    def __base_url(self)->str | None:
+        try:
+            return public_base_url()
+        except RuntimeError:
+            self.app.logger.exception("取得對外網址失敗，無法寄信")
+            return None
+
+    def __send(self, msg:Message)->bool:
+        #  同步寄送，才能知道是否寄送成功
+        try:
+            with self.app.app_context():
+                self.mail.send(msg)
+        except Exception:
+            self.app.logger.exception(f"寄信失敗：{msg.recipients}")
+            return False
         print(f"You Send Mail by Flask-Mail Success!!")
-
-    
-    def send_async_email(self,app:Flask, msg:Message)->None:
-    #  下面有說明
-         with app.app_context():
-            self.mail.send(msg)
-
-
-        
-
-
+        return True

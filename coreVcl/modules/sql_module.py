@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import Boolean, Engine, Integer, String, create_engine
+from sqlalchemy.engine import URL
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker, Session
 
 class Base(DeclarativeBase):
@@ -32,7 +33,7 @@ class GameModule:
     pass_count:int = 0
 
 class DatabaseManager:
-    def __init__(self, db_url:str = "sqlite:///login.db") -> None:
+    def __init__(self, db_url:str | URL = "sqlite:///login.db") -> None:
         self.engine: Engine = create_engine(db_url, echo=False)
         self.__session_factory:sessionmaker[Session] = sessionmaker(bind=self.engine, expire_on_commit=False)
 

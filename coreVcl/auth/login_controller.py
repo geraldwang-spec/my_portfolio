@@ -1,15 +1,8 @@
-from ast import Dict
-from dataclasses import asdict, dataclass
-import os
 import random
-from readline import redisplay
-from typing import Any
-from flask import Flask, jsonify
-from flask.cli import load_dotenv
-from redis import SubkeyspaceChannel
-from sqlalchemy import false, null, true
+from flask import Flask
 from werkzeug.security import generate_password_hash, check_password_hash
 from auth.login_response import loginResponse
+from auth.login_setting import basic_settings, get_settings
 from modules.sql_module import DatabaseManager, UserModule
 from auth.login_process import UserData as user
 from modules.mail_process import MailProcess as mailp
@@ -24,8 +17,8 @@ class LoginController:
     __db_m:DatabaseManager|None
     __userProcess:user |None
     # __gameUsers:list[GameModule] | None 
-    __vcl_tunnel_url:str = ""
     __rds:redisP |None
+    __setting:basic_settings
 
     def __init__(self, _app:Flask) -> None:
         self.app = _app
@@ -33,27 +26,25 @@ class LoginController:
         self.__db_m = None
         self.__userProcess = None
         self.__gameUsers = []
-        self.__vcl_tunnel_url = ""
         self.__rds = None
+        self.__setting = get_settings()
 
     def init_core(self)->None:
-        _ = load_dotenv()
-        self.app.secret_key = os.environ.get("SECRET_KEY")
+        self.app.secret_key = self.__setting.secret_key
         self.app.config.update(
             MAIL_SERVER='smtp.gmail.com',
             MAIL_PORT=465,
             MAIL_USE_TLS=False,
             MAIL_USE_SSL=True,
-            MAIL_USERNAME=os.environ.get("MAIL_USERNAME"),
-            MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD")
+            MAIL_USERNAME=self.__setting.mail_username,
+            MAIL_PASSWORD=self.__setting.mail_password,
         )
-        self.__vcl_tunnel_url = os.environ.get("VCL_TUNNEL")
-        self.__mailproc = mailp(self.app, tunnel_url=self.__vcl_tunnel_url)
+        self.__mailproc = mailp(self.app)
         # self.__db_m = DatabaseManager()
-        self.__db_m = DatabaseManager(db_url="mysql+pymysql://services:password@mariadb_db:3306/vision_db")
+        self.__db_m = DatabaseManager(db_url=self.__setting.database_url)
         self.__db_m.init_db()
         self.__userProcess = user(db_manager=self.__db_m)
-        self.__rds = redisP(host=os.environ.get("REDIS_HOST"), passwd= os.environ.get("REDIS_PASSWORD"))
+        self.__rds = redisP(host=self.__setting.redis_ip, passwd=self.__setting.redis_password)
 
     def check_user_status(self, username:str, passwd:str):
         assert self.__userProcess is not None, "__userProcess should be init"
@@ -76,6 +67,9 @@ class LoginController:
         if user_c != None:
             return loginResponse(success=False, message=f"{user_name}存在", data=None)
 
+        if self.__userProcess.get_user_by_mail(email) != None:
+            return loginResponse(success=False, message="此E-mail已被註冊", data=None)
+
         user_c = UserModule(
             username = user_name,
             passwd = generate_password_hash(passwd),
@@ -85,11 +79,12 @@ class LoginController:
             mail_check_number = random.randint(1000, 9999),
         )
 
+        assert self.__mailproc is not None, "__mailproc should be init"
+        if not self.__mailproc.send_verify_mail(user=user_c):
+            return loginResponse(success=False, message="驗證信寄送失敗，請稍後再試", data=None)
+
         if self.__userProcess.create_user(user_c) == False:
             return loginResponse(success=False, message=f"{user_name}註冊失敗，請重新註冊", data=None)
-
-        assert self.__mailproc is not None, "__mailproc should be init"
-        self.__mailproc.start_mail_thread(user=user_c)
 
         return loginResponse(success=True, message="", data=None)
 
@@ -100,7 +95,7 @@ class LoginController:
         if user_c == None:
             return loginResponse(success=False,  message=f"註冊失敗，請重新註冊", data=None)
     
-        if eval(number) != user_c.mail_check_number:
+        if not number.isdigit() or int(number) != user_c.mail_check_number:
             return loginResponse(success=False, message=f"E-mail驗證失敗，請重新註冊", data=None)
         
         if self.__userProcess.update_mail_ready(user_name, True) == False:
@@ -134,8 +129,14 @@ class LoginController:
                 message=mesg,
                 data=None )
 
-        self.__mailproc.send_reset_mail_thread(user=user_c, reset_nu=randNum)
-        
+        if not self.__mailproc.send_reset_mail(user=user_c, reset_nu=randNum):
+            # 寄信失敗就清掉 redis 的重設碼，讓使用者可以立即重試
+            _ = self.__rds.clean_password_number(user_c)
+            return loginResponse(
+                success=False,
+                message="重設密碼信寄送失敗，請稍後再試",
+                data=None)
+
         return loginResponse(
             success=True,
             message="請於E-mail收確認信",
