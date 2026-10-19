@@ -1,9 +1,8 @@
-from turtle import reset
+import secrets
 import redis
 from typing import Any
-
-from sqlalchemy import delete
-from modules.redis_module import RedisClient as redisC, RedisSetting
+from modules.redis_module import RedisClient as redisC
+from modules.redis_module import RedisSetting
 from modules.sql_module import UserModule
 
 
@@ -73,19 +72,20 @@ class LoginRedisProcess:
         assert self.__redis is not None
         r:redis.Redis = self.__redis.get_connection()
         key:str = f"reset:auth:{userId}"
-        data:dict[str, Any] = r.hgetall(key)
 
+        data:dict[str, Any] = r.hgetall(key)
         if not data:
             return False
 
-        if int(r["number"]) != reset_id:
-            r.hincrby(key, "fails", 1)
-            if fails >= self.MAX_ATTEMPTS or r.ttl(key) == -1:
-                r.delete(key)
+        if secrets.compare_digest(data["number"], str(reset_id)):
+            return True
 
-            return False
+        fails:int = r.hincrby(key, "fails", 1)
+        if fails >= self.MAX_ATTEMPTS or r.ttl(key) == -1:
+            r.delete(key)
+
+        return False
         
-        return True
 
 
         

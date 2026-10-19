@@ -1,4 +1,3 @@
-import random
 import modules.secret_number
 from flask import Flask
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -12,7 +11,6 @@ from auth.login_redis_process import LoginRedisProcess as redisP
 
 
 class LoginController:
-    users: list[user] = []
     app: Flask
     __mailproc: mailp |None
     __db_m:DatabaseManager|None
@@ -54,10 +52,10 @@ class LoginController:
             return loginResponse(success= False, message= f"{username}未註冊", data= None)
 
         if check_password_hash( user.passwd, passwd) == False:
-            return loginResponse(success=False, message=f"帳號或密碼錯誤", data=None)
+            return loginResponse(success=False, message="帳號或密碼錯誤", data=None)
 
         if not user.mail_ready:
-            return loginResponse(success=False, message=f"E-mail未確認", data=None)
+            return loginResponse(success=False, message="E-mail未確認", data=None)
 
         return loginResponse(success=True, message="", data=user.username)
 
@@ -95,10 +93,10 @@ class LoginController:
         user_c = self.__userProcess.get_user_by_username(user_name)
 
         if user_c == None:
-            return loginResponse(success=False,  message=f"註冊失敗，請重新註冊", data=None)
+            return loginResponse(success=False,  message="註冊失敗，請重新註冊", data=None)
     
         if not number.isdigit() or int(number) != user_c.mail_check_number:
-            return loginResponse(success=False, message=f"E-mail驗證失敗，請重新註冊", data=None)
+            return loginResponse(success=False, message="E-mail驗證失敗，請重新註冊", data=None)
         
         if self.__userProcess.update_mail_ready(user_name, True) == False:
             return loginResponse(success=False, message="註冊失敗，請重新註冊", data=None)
@@ -171,7 +169,7 @@ class LoginController:
         #         message="重設失敗，請在重新設定",
         #         data=None)
 
-        if self.__rds.verify_reset_number(userId=user_c.id, reset_id):
+        if not self.__rds.verify_reset_number(userId=user_c.id, reset_id=reset_id):
             return loginResponse(
                 success=False,
                 message="重設失敗，請在重新設定",
