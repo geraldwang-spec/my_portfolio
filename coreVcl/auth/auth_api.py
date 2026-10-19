@@ -4,7 +4,6 @@ from auth.login_controller import LoginController as loginC
 from auth.login_response import loginResponse
 from modules.utils import UtilsTools
 
-
 def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
     auth_bp = Blueprint(mName, __name__, url_prefix=f"/{mName}")
     
