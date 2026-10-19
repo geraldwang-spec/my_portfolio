@@ -163,13 +163,14 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
     @auth_bp.route('/me')
     def me():
         name = session.get("user")
+        print(f"name = {name}")
         if not name:
             return loginResponse(
                 success=False,
                 message="didn't login",
                 data=None).to_response(), 401
 
-        return {"success":True, "user": {"username": username}}
+        return {"success":True, "user": {"username": name}}
 
     @auth_bp.route('/logout', methods=['POST'])
     def logout():
