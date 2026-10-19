@@ -165,7 +165,13 @@ class LoginController:
                 message="超過重設時間",
                 data=None)
 
-        if int(rds_r["number"]) != reset_id:
+        # if int(rds_r["number"]) != reset_id:
+        #     return loginResponse(
+        #         success=False,
+        #         message="重設失敗，請在重新設定",
+        #         data=None)
+
+        if self.__rds.verify_reset_number(userId=user_c.id, reset_id):
             return loginResponse(
                 success=False,
                 message="重設失敗，請在重新設定",
