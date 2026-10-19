@@ -85,7 +85,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
             number=request.args.get("mail_number", ""))
 
         if not res.success:
-            return render_template(template_name_or_list="error.html", error_message=res.message)
+            return render_template(template_name_or_list="error.html", error_message=res.message), 400
         return render_template("index.html")
 
     @auth_bp.route('/resetpasswd', methods=['POST'])
