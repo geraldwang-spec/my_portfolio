@@ -38,6 +38,11 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
         res:loginResponse = loginCore.check_user_status(
             username=username,
             passwd=passwd)
+
+        if not res.success:
+            return res.to_response(), 401
+        session.clear()
+        session.permanent = True
         session["user"] = res.data
         return res.to_response()
 
@@ -154,14 +159,25 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
 
         return res.to_response()
 
+
+    @auth_bp.route('/me')
+    def me():
+        name = session.get("user")
+        if not name:
+            return loginResponse(
+                success=False,
+                message="didn't login",
+                data=None).to_response(), 401
+
+        return {"success":True, "user": {"username": username}}
+
     @auth_bp.route('/logout', methods=['POST'])
     def logout():
-        session.pop("user", None)
+        session.clear()
         return loginResponse(
             success=True,
             message="logout",
             data=None).to_response()
-
 
     @auth_bp.route('/test')
     def webTest():
