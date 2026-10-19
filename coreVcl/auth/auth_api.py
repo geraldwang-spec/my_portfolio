@@ -53,8 +53,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
             return loginResponse(
                 success=False,
                 message="無效JSON格式",
-                data=None
-            )
+                data=None).to_response()
 
         user_name = data.get('register-username')
         passwd = data.get('register-password')
@@ -99,8 +98,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
             return loginResponse(
                 success=False,
                 message="無效JSON格式",
-                data=None
-            )
+                data=None).to_response()
 
         user_name = data.get('reset-username')
         email = data.get('reset-email')
@@ -112,13 +110,12 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
     def reset_passwd_by_user():
         user = request.args.get("user","")
         result_ok, resetId = UtilsTools.try_parse_int(request.args.get("resetId",""))
-        print(f"DEBUG -> result_ok: {result_ok}, type:{type(result_ok)}, resetId: {resetId}, type: {type(resetId)}")
 
         if not result_ok:
             return loginResponse(
                 success=False,
                 message="重設錯誤請重設",
-                data=None)
+                data=None).to_response()
 
         res:loginResponse = loginCore.check_reset_id(
             user=user,

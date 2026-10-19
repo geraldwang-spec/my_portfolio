@@ -10,7 +10,6 @@ class LoginRedisProcess:
     MAX_ATTEMPTS:int = 5
     __redis:redisC | None = None
     __ex_second:int = 300
-    __reset_error_count:int = 0
 
     def __init__(self, host:str, passwd:str) -> None:
         self.__redis = redisC(setting=RedisSetting(
