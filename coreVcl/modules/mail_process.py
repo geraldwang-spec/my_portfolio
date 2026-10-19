@@ -20,7 +20,6 @@ class MailProcess:
         #  寄件者，若參數有設置就不需再另外設置
         msg_sender = 'Sender Mail@mail_domain.com'
         #  收件者，格式為list，否則報錯
-        print(f"user maile = {user.mail}")
         msg_recipients:list[str | tuple[str, str]] | None = [user.mail]
         #  郵件內容
         # msg_body = 'Hey, I am mail body!'
@@ -43,7 +42,6 @@ class MailProcess:
         #  寄件者，若參數有設置就不需再另外設置
         msg_sender = 'Sender Mail@mail_domain.com'
         #  收件者，格式為list，否則報錯
-        print(f"user maile = {user.mail}")
         msg_recipients:list[str | tuple[str, str]] | None = [user.mail]
         #  郵件內容
         # msg_body = 'Hey, I am mail body!'
