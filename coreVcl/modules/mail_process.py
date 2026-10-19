@@ -68,7 +68,17 @@ class MailProcess:
             with self.app.app_context():
                 self.mail.send(msg)
         except Exception:
-            self.app.logger.exception(f"寄信失敗：{msg.recipients}")
+            # 不記錄收件者 Email（個資），只記錄網域方便排查是否為特定信箱服務的問題
+            self.app.logger.exception("寄信失敗：domain=%s", _mail_domain(msg.recipients))
             return False
-        print(f"You Send Mail by Flask-Mail Success!!")
+        self.app.logger.info("寄信成功")
         return True
+
+
+def _mail_domain(recipients: list | None) -> str:
+    """只取第一位收件者的網域（例如 gmail.com），避免把完整 Email 寫進 log"""
+    if not recipients:
+        return "-"
+    first = recipients[0]
+    addr = first[1] if isinstance(first, tuple) else first   # Flask-Mail 收件者可為 (名稱, Email)
+    return addr.rsplit("@", 1)[-1] if "@" in addr else "-"

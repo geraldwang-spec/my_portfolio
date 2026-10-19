@@ -4,3 +4,7 @@ coreVcl/modules/__pycache__/
 .env
 .env.*
 !.env.example
+
+# 任何目錄下的 Python 快取
+__pycache__/
+.pytest_cache/

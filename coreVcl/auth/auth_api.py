@@ -109,10 +109,10 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
         result_ok, resetId = UtilsTools.try_parse_int(request.args.get("resetId",""))
 
         if not result_ok:
-            return loginResponse(
-                success=False,
-                message="重設錯誤請重設",
-                data=None).to_response(), 400
+            # 這是使用者從信件點開的網頁，錯誤時顯示錯誤頁而不是 JSON
+            return render_template(
+                template_name_or_list="error.html",
+                error_message="連結無效，請重新申請重設密碼"), 400
 
         res:loginResponse = loginCore.check_reset_id(
             user=user,
