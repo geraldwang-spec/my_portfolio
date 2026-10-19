@@ -27,7 +27,7 @@ podman login registry.redhat.io
 echo "[3/5] pull container image..."
 podman pull registry.redhat.io/rhel9/redis-7:latest
 podman pull registry.redhat.io/ubi8/nginx-122:latest
-podman pull docker.io/cloudflare/cloudflared:latest
+podman pull docker.io/cloudflare/cloudflared:2026.10.0
 podman pull registry.redhat.io/rhel9/mariadb-1011
 podman pull registry.access.redhat.com/ubi9/ubi
 

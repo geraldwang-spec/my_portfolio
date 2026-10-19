@@ -1,4 +1,5 @@
 import random
+import modules.secret_number
 from flask import Flask
 from werkzeug.security import generate_password_hash, check_password_hash
 from auth.login_response import loginResponse
@@ -76,7 +77,8 @@ class LoginController:
             mail = email,
             # name = name,
             mail_ready = False,
-            mail_check_number = random.randint(1000, 9999),
+            # mail_check_number = random.randint(1000, 9999),
+            mail_check_number = modules.secret_number.generate_random_number(100000, 999999)
         )
 
         assert self.__mailproc is not None, "__mailproc should be init"
@@ -121,7 +123,8 @@ class LoginController:
                 message=f"{user_c.username} E-mail未完成驗證",
                 data=None)
 
-        randNum: int = random.randint(111111, 999999)
+        # randNum: int = random.randint(111111, 999999)
+        randNum: int = modules.secret_number.generate_random_number(100000, 999999)
         result, mesg = self.__rds.reset_password_number(user=user_c, number=randNum)
         if not result:
             return loginResponse(
