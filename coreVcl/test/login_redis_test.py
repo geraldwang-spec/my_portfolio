@@ -1,5 +1,4 @@
 from auth.login_redis_process import LoginRedisProcess as auth_rds
-from modules.sql_module import UserModule as userM
 
 def test_redis():
     test_rds = auth_rds("127.0.0.1", "vclpasswd")

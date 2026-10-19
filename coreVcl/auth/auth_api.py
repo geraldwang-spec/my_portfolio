@@ -1,9 +1,6 @@
 from typing import Any
-from webbrowser import get
-from flask import Flask, Blueprint, jsonify, render_template, request, session
-from sqlalchemy.sql.util import surface_selectables
-from sqlalchemy.util import methods_equivalent
-from auth.login_controller import LoginController as loginC, user
+from flask import Blueprint, render_template, request, session
+from auth.login_controller import LoginController as loginC
 from auth.login_response import loginResponse
 from modules.utils import UtilsTools
 
@@ -44,7 +41,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
         session.clear()
         session.permanent = True
         session["user"] = res.data
-        return res.to_response()
+        return res.to_response(), 200
 
     @auth_bp.route('/register', methods=['POST'])
     def register():
@@ -53,7 +50,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
             return loginResponse(
                 success=False,
                 message="無效JSON格式",
-                data=None).to_response()
+                data=None).to_response(), 400
 
         user_name = data.get('register-username')
         passwd = data.get('register-password')
@@ -98,13 +95,13 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
             return loginResponse(
                 success=False,
                 message="無效JSON格式",
-                data=None).to_response()
+                data=None).to_response(), 400
 
         user_name = data.get('reset-username')
         email = data.get('reset-email')
         res:loginResponse = loginCore.send_reset_password(username=user_name, email=email)
 
-        return res.to_response()
+        return res.to_response(), 200
 
     @auth_bp.route('/reset_passwd')
     def reset_passwd_by_user():
@@ -115,14 +112,14 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
             return loginResponse(
                 success=False,
                 message="重設錯誤請重設",
-                data=None).to_response()
+                data=None).to_response(), 400
 
         res:loginResponse = loginCore.check_reset_id(
             user=user,
             reset_id=resetId)
 
         if not res.success:
-            return render_template(template_name_or_list="error.html", error_message=res.message)
+            return render_template(template_name_or_list="error.html", error_message=res.message), 400
         session["reset_user"] = user
         return render_template(f"{mName}/reset_passwd.html")
 
@@ -133,7 +130,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
             return loginResponse(
                 success=False,
                 message="重設失敗請在重設",
-                data=None).to_response()
+                data=None).to_response(), 400
 
 
         data = request.get_json()
@@ -142,7 +139,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
                 success=False,
                 message="無效JSON格式",
                 data=None
-            ).to_response()
+            ).to_response(), 400
 
         passwd = data.get('reset-pw-password')
         repeat = data.get('reset-pw-repeat')
@@ -150,17 +147,16 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
         res:loginResponse = loginCore.change_user_password(current_user, passwd, repeat)
 
         if not res.success:
-            return res.to_response()
+            return res.to_response(), 400
 
         session.pop("reset_user", None)
 
-        return res.to_response()
+        return res.to_response(), 200
 
 
     @auth_bp.route('/me')
     def me():
         name = session.get("user")
-        print(f"name = {name}")
         if not name:
             return loginResponse(
                 success=False,
@@ -175,7 +171,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
         return loginResponse(
             success=True,
             message="logout",
-            data=None).to_response()
+            data=None).to_response(), 200
 
     @auth_bp.route('/test')
     def webTest():

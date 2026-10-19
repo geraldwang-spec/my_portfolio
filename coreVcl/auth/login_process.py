@@ -1,4 +1,3 @@
-from sys import modules
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from modules.sql_module import DatabaseManager,UserModule

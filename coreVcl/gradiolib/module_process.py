@@ -1,6 +1,6 @@
 import os
 import torch
-from typing import Any, Optional
+from typing import Any
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 class translate_module:
