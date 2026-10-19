@@ -3,10 +3,13 @@ import threading
 from flask import Blueprint, Flask, render_template, request
 from auth.auth_api import create_auth_bp
 from auth.login_controller import LoginController as loginC
+from auth.login_setting import session_cookies_config
 
 
 def create_app()->Flask:
     app:Flask = Flask(__name__)
+
+    app.config.update(session_cookies_config())
 
     loginCore:loginC = loginC(_app=app)
     loginCore.init_core()

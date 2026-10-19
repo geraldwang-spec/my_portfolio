@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from modules.Settings import read_secret, require_env
 from sqlalchemy.engine import URL
+from datetime import timedelta
 
 
 @dataclass(frozen=True)
@@ -34,5 +35,13 @@ def get_settings()->basic_settings:
         ),
     )
 
-
-
+def session_cookies_config()->dict[str,object]:
+    return {
+        "SESSION_COOKIE_SECURE": True,           # dev 用 IP 連線時才不會吃掉 cookie
+        "SESSION_COOKIE_HTTPONLY": True,
+        "SESSION_COOKIE_SAMESITE": "Lax",
+        "PERMANENT_SESSION_LIFETIME": timedelta(hours=8),
+        # __Host- 前綴：瀏覽器強制要求 Secure、Path=/、不可設 Domain
+        # 防止子網域覆寫你的 cookie，只能在 HTTPS 下使用，因此 dev 環境不加
+        "SESSION_COOKIE_NAME": "__Host-session",
+    }
