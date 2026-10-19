@@ -38,6 +38,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
         res:loginResponse = loginCore.check_user_status(
             username=username,
             passwd=passwd)
+        session["user"] = res.data
         return res.to_response()
 
     @auth_bp.route('/register', methods=['POST'])
@@ -152,6 +153,15 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
         session.pop("reset_user", None)
 
         return res.to_response()
+
+    @auth_bp.route('/logout', methods=['POST'])
+    def logout():
+        session.pop("user", None)
+        return loginResponse(
+            success=True,
+            message="logout",
+            data=None).to_response()
+
 
     @auth_bp.route('/test')
     def webTest():
