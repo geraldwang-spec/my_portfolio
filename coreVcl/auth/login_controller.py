@@ -1,3 +1,4 @@
+from modules.errors import APIError
 import modules.secret_number
 from flask import Flask
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -178,24 +179,21 @@ class LoginController:
         assert self.__userProcess is not None, "__userProcess should be init"
         assert self.__rds is not None, "__rds should be init"
         if passwd != repeat:
-            return loginResponse(
-                success=False,
-                message="密碼不一致",
-                data=None)
+            raise APIError(message="密碼不一致", status=400, code="password_mismatch")
         
         if not self.__userProcess.update_password_by_user(user, generate_password_hash(passwd)):
-            return loginResponse(
-                success=False,
+            raise APIError(
                 message="更新密碼失敗，請重新設定",
-                data=None)
+                status=500,
+                code="db_error")
 
         user_c:UserModule | None = self.__userProcess.get_user_by_username(username=user)
         success = self.__rds.clean_password_number(user_c)
         if not success:
-            return loginResponse(
-                success=False,
+            raise APIError(
                 message="清除redis錯誤",
-                data=None)
+                status=400,
+                code="clean redis error")
 
         return loginResponse(
             success=True,

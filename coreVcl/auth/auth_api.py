@@ -2,6 +2,7 @@ from typing import Any
 from flask import Blueprint, render_template, request, session
 from auth.login_controller import LoginController as loginC
 from auth.login_response import loginResponse
+from modules.errors import APIError
 from modules.utils import UtilsTools
 
 def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
@@ -126,19 +127,11 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
     def renew_passwd():
         current_user = session.get("reset_user", "")
         if not current_user:
-            return loginResponse(
-                success=False,
-                message="重設失敗請在重設",
-                data=None).to_response(), 400
-
+            raise APIError(message="重設失敗請在重設", status=400, code="reset_session_mission")
 
         data = request.get_json()
         if not isinstance(data, dict):
-            return loginResponse(
-                success=False,
-                message="無效JSON格式",
-                data=None
-            ).to_response(), 400
+            raise APIError(message="無效JSON格式", status=400, code="invalid_json")
 
         passwd = data.get('reset-pw-password')
         repeat = data.get('reset-pw-repeat')
@@ -146,10 +139,9 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
         res:loginResponse = loginCore.change_user_password(current_user, passwd, repeat)
 
         if not res.success:
-            return res.to_response(), 400
+            raise APIError(message=res.message, status=400, code="change_user_password_fail")
 
         session.pop("reset_user", None)
-
         return res.to_response(), 200
 
 

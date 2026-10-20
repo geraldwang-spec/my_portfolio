@@ -3,12 +3,15 @@ from flask import Blueprint, Flask, render_template
 from auth.auth_api import create_auth_bp
 from auth.login_controller import LoginController as loginC
 from auth.login_setting import session_cookies_config
+from modules.errors import register_error_handlers
 
 
 def create_app()->Flask:
     app:Flask = Flask(__name__)
 
     app.config.update(session_cookies_config())
+
+    register_error_handlers(app=app)
 
     loginCore:loginC = loginC(_app=app)
     loginCore.init_core()
