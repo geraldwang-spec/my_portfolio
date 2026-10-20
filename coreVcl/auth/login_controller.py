@@ -1,4 +1,3 @@
-import logger
 import modules.secret_number
 from modules.errors import APIError
 from flask import Flask
@@ -191,7 +190,7 @@ class LoginController:
 
         user_c:UserModule | None = self.__userProcess.get_user_by_username(username=user)
         if not self.__rds.clean_password_number(user_c):
-            logger.warning("reset code cleanup failed after password change")
+            self.app.logger.warning("reset code cleanup failed after password change")
 
         return loginResponse(
             success=True,

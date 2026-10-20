@@ -11,4 +11,3 @@ transformers
 pydantic
 redis
 pytest
-logger
