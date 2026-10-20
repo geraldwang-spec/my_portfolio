@@ -1,13 +1,14 @@
 import modules.secret_number
-from modules.errors import APIError
 from flask import Flask
-from werkzeug.security import generate_password_hash, check_password_hash
+from modules.errors import APIError
+from modules.mail_process import MailProcess as mailp
+from modules.sql_module import DatabaseManager, UserModule
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from auth.login_process import UserData as user
+from auth.login_redis_process import LoginRedisProcess as redisP
 from auth.login_response import loginResponse
 from auth.login_setting import basic_settings, get_settings
-from modules.sql_module import DatabaseManager, UserModule
-from auth.login_process import UserData as user
-from modules.mail_process import MailProcess as mailp
-from auth.login_redis_process import LoginRedisProcess as redisP
 
 # from auth.login_process import LoginResponse 
 
