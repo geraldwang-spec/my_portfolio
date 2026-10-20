@@ -3,7 +3,6 @@ from types import SimpleNamespace
 
 import fakeredis
 import pytest
-
 from auth import login_redis_process as lrp
 
 USER_ID = 7

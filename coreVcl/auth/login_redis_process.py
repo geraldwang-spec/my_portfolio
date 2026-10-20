@@ -1,6 +1,7 @@
 import secrets
-import redis
 from typing import Any
+
+import redis
 from modules.redis_module import RedisClient as redisC
 from modules.redis_module import RedisSetting
 from modules.sql_module import UserModule

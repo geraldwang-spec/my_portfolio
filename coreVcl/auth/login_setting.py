@@ -1,7 +1,8 @@
 from dataclasses import dataclass
+from datetime import timedelta
+
 from modules.Settings import read_secret, require_env
 from sqlalchemy.engine import URL
-from datetime import timedelta
 
 
 @dataclass(frozen=True)

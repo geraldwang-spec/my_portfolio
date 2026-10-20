@@ -1,7 +1,9 @@
 import os
-import torch
 from typing import Any
-from transformers import AutoTokenizer, AutoModelForCausalLM
+
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 
 class translate_module:
     def __init__(self, path:str = "../saved_model")->None:

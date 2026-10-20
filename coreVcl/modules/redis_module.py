@@ -1,5 +1,7 @@
 from dataclasses import asdict, dataclass
+
 import redis
+
 
 @dataclass
 class RedisSetting:

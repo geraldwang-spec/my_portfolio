@@ -1,9 +1,12 @@
 from typing import Any
+
 from flask import Blueprint, render_template, request, session
-from auth.login_controller import LoginController as loginC
-from auth.login_response import loginResponse
 from modules.errors import APIError
 from modules.utils import UtilsTools
+
+from auth.login_controller import LoginController as loginC
+from auth.login_response import loginResponse
+
 
 def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
     auth_bp = Blueprint(mName, __name__, url_prefix=f"/{mName}")
@@ -127,7 +130,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
     def renew_passwd():
         current_user = session.get("reset_user", "")
         if not current_user:
-            raise APIError(message="重設失敗請在重設", status=400, code="reset_session_mission")
+            raise APIError(message="重設失敗請在重設", status=400, code="reset_session_missing")
 
         data = request.get_json()
         if not isinstance(data, dict):
@@ -136,10 +139,10 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
         passwd = data.get('reset-pw-password')
         repeat = data.get('reset-pw-repeat')
 
-        res:loginResponse = loginCore.change_user_password(current_user, passwd, repeat)
+        if not isinstance(passwd, str) or not isinstance(repeat, str) or not passwd:
+            raise APIError(message="請輸入新密碼", status=400, code="password_required")
 
-        if not res.success:
-            raise APIError(message=res.message, status=400, code="change_user_password_fail")
+        res:loginResponse = loginCore.change_user_password(current_user, passwd, repeat)
 
         session.pop("reset_user", None)
         return res.to_response(), 200

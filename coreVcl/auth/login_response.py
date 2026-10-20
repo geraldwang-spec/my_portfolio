@@ -1,6 +1,8 @@
 from typing import Any
+
 from flask import Response, jsonify
 from pydantic import BaseModel
+
 
 class loginResponse(BaseModel):
     success:bool

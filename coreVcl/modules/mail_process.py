@@ -1,7 +1,9 @@
 from flask import Flask
 from flask_mail import Mail, Message
-from modules.sql_module import UserModule
+
 from modules.Settings import public_base_url
+from modules.sql_module import UserModule
+
 
 class MailProcess:
     mail: Mail

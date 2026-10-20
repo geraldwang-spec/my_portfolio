@@ -1,6 +1,7 @@
 import gradio as gr
 from gradiolib.module_process import translate_module as tm
 
+
 def create_and_launch_gradio(server_name="0.0.0.0", server_port=7860, share=False)->None:
     
     translator = tm(path="./saved_model")

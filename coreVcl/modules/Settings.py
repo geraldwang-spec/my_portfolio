@@ -1,7 +1,8 @@
-import os
 import json
+import os
 import urllib.request
 from pathlib import Path
+
 
 def read_secret(name:str)->str:
     secrets_dir:Path = Path(os.environ.get("SECRETS_DIR", "/run/secrets"))

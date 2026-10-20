@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+
 from sqlalchemy import Boolean, Engine, Integer, String, create_engine
 from sqlalchemy.engine import URL
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker, Session
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
+
 
 class Base(DeclarativeBase):
     pass
