@@ -46,3 +46,15 @@ def session_cookies_config()->dict[str,object]:
         # 防止子網域覆寫你的 cookie，只能在 HTTPS 下使用，因此 dev 環境不加
         "SESSION_COOKIE_NAME": "__Host-session",
     }
+
+def mail_config(settings: basic_settings)->dict[str, object]:
+    """Flask-Mail 需要的設定，原本寫在 LoginController.init_core 裡"""
+    return {
+        "MAIL_SERVER": "smtp.gmail.com",
+        "MAIL_PORT": 465,
+        "MAIL_USE_TLS": False,
+        "MAIL_USE_SSL": True,
+        "MAIL_USERNAME": settings.mail_username,
+        "MAIL_PASSWORD": settings.mail_password,
+    }
+    

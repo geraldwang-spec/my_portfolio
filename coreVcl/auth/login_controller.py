@@ -18,29 +18,20 @@ class LoginController:
     __mailproc: mailp |None
     __db_m:DatabaseManager|None
     __userProcess:user |None
-    # __gameUsers:list[GameModule] | None 
     __rds:redisP |None
     __setting:basic_settings
 
-    def __init__(self, _app:Flask) -> None:
+    def __init__(self, _app:Flask, settings: basic_settings) -> None:
         self.app = _app
         self.__mailproc = None
         self.__db_m = None
         self.__userProcess = None
         self.__gameUsers = []
         self.__rds = None
-        self.__setting = get_settings()
+        self.__setting = settings
 
     def init_core(self)->None:
         self.app.secret_key = self.__setting.secret_key
-        self.app.config.update(
-            MAIL_SERVER='smtp.gmail.com',
-            MAIL_PORT=465,
-            MAIL_USE_TLS=False,
-            MAIL_USE_SSL=True,
-            MAIL_USERNAME=self.__setting.mail_username,
-            MAIL_PASSWORD=self.__setting.mail_password,
-        )
         self.__mailproc = mailp(self.app)
         # self.__db_m = DatabaseManager()
         self.__db_m = DatabaseManager(db_url=self.__setting.database_url)

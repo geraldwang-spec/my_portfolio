@@ -2,14 +2,16 @@
 import os
 from auth.auth_api import create_auth_bp
 from auth.login_controller import LoginController as loginC
-from auth.login_setting import session_cookies_config
+from auth.login_setting import basic_settings, get_settings, mail_config, session_cookies_config
 from flask import Blueprint, Flask, render_template
 from modules.errors import register_error_handlers
 
-def create_app()->Flask:
+def create_app(settings:basic_settings | None = None)->Flask:
+    settings:basic_settings = settings or get_settings()
     app:Flask = Flask(__name__)
 
     app.config.update(session_cookies_config())
+    app.config.update(mail_config(settings))
 
     register_error_handlers(app=app)
 
