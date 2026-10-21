@@ -1,14 +1,13 @@
 import modules.secret_number
+from auth.login_process import UserData as user
+from auth.login_redis_process import LoginRedisProcess as redisP
+from auth.login_response import loginResponse
+from auth.login_setting import basic_settings
 from flask import Flask
 from modules.errors import APIError
 from modules.mail_process import MailProcess as mailp
 from modules.sql_module import DatabaseManager, UserModule
 from werkzeug.security import check_password_hash, generate_password_hash
-
-from auth.login_process import UserData as user
-from auth.login_redis_process import LoginRedisProcess as redisP
-from auth.login_response import loginResponse
-from auth.login_setting import basic_settings, get_settings
 
 # from auth.login_process import LoginResponse 
 
@@ -31,7 +30,6 @@ class LoginController:
         self.__setting = settings
 
     def init_core(self)->None:
-        self.app.secret_key = self.__setting.secret_key
         self.__mailproc = mailp(self.app)
         # self.__db_m = DatabaseManager()
         self.__db_m = DatabaseManager(db_url=self.__setting.database_url)

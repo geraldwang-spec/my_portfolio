@@ -7,7 +7,7 @@ from flask import Blueprint, Flask, render_template
 from modules.errors import register_error_handlers
 
 def create_app(settings:basic_settings | None = None)->Flask:
-    settings:basic_settings = settings or get_settings()
+    settings = settings or get_settings()
     app:Flask = Flask(__name__)
 
     app.config.update(session_cookies_config())
@@ -15,7 +15,7 @@ def create_app(settings:basic_settings | None = None)->Flask:
 
     register_error_handlers(app=app)
 
-    loginCore:loginC = loginC(_app=app)
+    loginCore:loginC = loginC(_app=app, settings=settings)
     loginCore.init_core()
 
     auth_blueprint:Blueprint= create_auth_bp(loginCore)
