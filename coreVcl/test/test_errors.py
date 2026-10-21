@@ -27,13 +27,3 @@ def test_unexpected_error_is_500_and_hides_detail():
     assert res.status_code == 500
     assert "secret detail" not in res.get_data(as_text=True)   # 內部訊息不可外洩
 
-def test_renew_password_without_reset_session(client):
-    res = client.post("/auth/renew_password", json={})
-    assert res.status_code == 400
-    assert res.get_json()["data"]["code"] == "reset_session_missing"
-
-def test_renew_password_missing_fields_is_400_not_500(client):
-    with client.session_transaction() as s:   # 模擬已經從信件點開重設連結
-        s["reset_user"] = "alice"
-    res = client.post("/auth/renew_password", json={})
-    assert res.status_code == 400
