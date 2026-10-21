@@ -4,6 +4,7 @@ from auth.login_controller import LoginController as loginC
 from auth.login_setting import session_cookies_config
 from flask import Blueprint, Flask, render_template
 from modules.errors import register_error_handlers
+from modules.Settings import require_env
 
 
 def create_app()->Flask:
@@ -41,4 +42,5 @@ if __name__ == "__main__":
 
     flask_app = create_app()
     # flask_app.run(host="0.0.0.0", debug=True, port=5000, use_reloader=False)
-    flask_app.run(host="0.0.0.0", debug=True, port=5000)
+    debug:bool = require_env("FLASK_DEBUG") == "1"
+    flask_app.run(host="0.0.0.0", debug=debug, port=5000)
