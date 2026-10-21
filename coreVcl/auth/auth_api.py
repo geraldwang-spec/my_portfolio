@@ -167,8 +167,4 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
             message="logout",
             data=None).to_response(), 200
 
-    @auth_bp.route('/test')
-    def webTest():
-        return render_template(f"{mName}/reset_passwd.html")
-
     return auth_bp
