@@ -179,7 +179,7 @@ class LoginController:
                 code="db_error")
 
         user_c:UserModule | None = self.__userProcess.get_user_by_username(username=user)
-        if not self.__rds.clean_password_number(user_c):
+        if user_c is not None and not self.__rds.clean_password_number(user_c):
             self.app.logger.warning("reset code cleanup failed after password change")
 
         return loginResponse(
