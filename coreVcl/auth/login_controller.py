@@ -40,7 +40,6 @@ class LoginController:
             host=self.__setting.redis_ip,
             password=self.__setting.redis_password,
         )).get_connection())
-        # self.__rds = redisP(host=self.__setting.redis_ip, passwd=self.__setting.redis_password)
 
     def check_user_status(self, username:str, passwd:str):
         assert self.__userProcess is not None, "__userProcess should be init"

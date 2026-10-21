@@ -18,7 +18,7 @@ def fake():
 
 @pytest.fixture
 def rds(fake):
-     # FakeRedis 是 redis.Redis 的子類別，可以直接從建構子傳進去，不用 monkeypatch
+    # FakeRedis 是 redis.Redis 的子類別，可以直接從建構子傳進去，不用 monkeypatch
     return lrp.LoginRedisProcess(client=fake)
 
 @pytest.fixture
