@@ -9,6 +9,7 @@ from modules.errors import register_error_handlers
 def create_app(settings:basic_settings | None = None)->Flask:
     settings = settings or get_settings()
     app:Flask = Flask(__name__)
+    app.secret_key = settings.secret_key
 
     app.config.update(session_cookies_config())
     app.config.update(mail_config(settings))
