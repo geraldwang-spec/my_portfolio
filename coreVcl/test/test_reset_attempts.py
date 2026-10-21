@@ -17,16 +17,9 @@ def fake():
 
 
 @pytest.fixture
-def rds(fake, monkeypatch):
-    # 把 RedisClient 換成回傳 fakeredis 的假物件（類似 C# 用 Moq 換掉相依物件）
-    class FakeClient:
-        def __init__(self, setting): ...
-        def get_connection(self):
-            return fake
-
-    monkeypatch.setattr(lrp, "redisC", FakeClient)
-    return lrp.LoginRedisProcess(host="unused", passwd="unused")
-
+def rds(fake):
+     # FakeRedis 是 redis.Redis 的子類別，可以直接從建構子傳進去，不用 monkeypatch
+    return lrp.LoginRedisProcess(client=fake)
 
 @pytest.fixture
 def user():

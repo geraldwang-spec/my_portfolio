@@ -8,6 +8,7 @@ from modules.errors import APIError
 from modules.mail_process import MailProcess as mailp
 from modules.sql_module import DatabaseManager, UserModule
 from werkzeug.security import check_password_hash, generate_password_hash
+from modules.redis_module import RedisClient, RedisSetting
 
 # from auth.login_process import LoginResponse 
 
@@ -35,7 +36,11 @@ class LoginController:
         self.__db_m = DatabaseManager(db_url=self.__setting.database_url)
         self.__db_m.init_db()
         self.__userProcess = user(db_manager=self.__db_m)
-        self.__rds = redisP(host=self.__setting.redis_ip, passwd=self.__setting.redis_password)
+        self.__rds = redisP(client=RedisClient(RedisSetting(
+            host=self.__setting.redis_ip,
+            password=self.__setting.redis_password,
+        )).get_connection())
+        # self.__rds = redisP(host=self.__setting.redis_ip, passwd=self.__setting.redis_password)
 
     def check_user_status(self, username:str, passwd:str):
         assert self.__userProcess is not None, "__userProcess should be init"

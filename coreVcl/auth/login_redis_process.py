@@ -2,29 +2,18 @@ import secrets
 from typing import Any
 
 import redis
-from modules.redis_module import RedisClient as redisC
-from modules.redis_module import RedisSetting
 from modules.sql_module import UserModule
 
 
 class LoginRedisProcess:
     MAX_ATTEMPTS:int = 5
-    __redis:redisC | None = None
     __ex_second:int = 300
 
-    def __init__(self, host:str, passwd:str) -> None:
-        self.__redis = redisC(setting=RedisSetting(
-            host= host,
-            port= 6379,
-            password=passwd,
-            max_connections=100,
-            decode_responses=True,
-            db = 0
-        ))
+    def __init__(self, client:redis.Redis) -> None:
+        self._rds: redis.Redis = client
 
     def get_reset_user_data(self, userId:int) ->dict[str,Any] | None:
-        assert self.__redis is not None
-        r = self.__redis.get_connection()
+        r:redis.Redis = self._rds
         data:dict[str, Any] = r.hgetall(f"reset:auth:{userId}")
 
         if not data:
@@ -33,9 +22,8 @@ class LoginRedisProcess:
         return data
 
     def reset_password_number(self, user:UserModule, number:int)->tuple[bool, str]:
-        assert self.__redis is not None
         successed:bool = self.__set_hash_with_ttl(
-            r=self.__redis.get_connection(),
+            r=self._rds,
             key=f"reset:auth:{user.id}",
             mapping={
                 "username":user.username,
@@ -62,15 +50,13 @@ class LoginRedisProcess:
         return True
 
     def clean_password_number(self, user:UserModule)->bool:
-        assert self.__redis is not None
-        r = self.__redis.get_connection()
+        r:redis.Redis = self._rds
         result:int = r.delete(f"reset:auth:{user.id}")
 
         return bool(result)
 
     def verify_reset_number(self, userId:int, reset_id:int) -> bool:
-        assert self.__redis is not None
-        r:redis.Redis = self.__redis.get_connection()
+        r:redis.Redis = self._rds
         key:str = f"reset:auth:{userId}"
 
         data:dict[str, Any] = r.hgetall(key)
