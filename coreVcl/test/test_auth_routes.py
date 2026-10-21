@@ -6,6 +6,7 @@ from auth.auth_api import create_auth_bp
 from auth.login_response import loginResponse
 from auth.login_setting import session_cookies_config
 from flask import Flask
+from modules.errors import register_error_handlers
 
 TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
 
@@ -27,6 +28,7 @@ def client():
     app = Flask(__name__, template_folder=str(TEMPLATES))
     app.secret_key = "test-only"
     app.config.update(session_cookies_config())    # 用正式環境的 cookie 設定
+    register_error_handlers(app)
     app.register_blueprint(create_auth_bp(FakeLoginCore()))
     client = app.test_client()
     # Secure cookie 只在 HTTPS 送出，所以測試也模擬 HTTPS 連線
@@ -82,3 +84,15 @@ def test_login_cookie_flags(client):
     assert "HttpOnly" in cookie
     assert "SameSite=Lax" in cookie
     assert "Expires=" in cookie                    # 確認 session.permanent 有生效
+
+
+def test_renew_password_without_reset_session(client):
+    res = client.post("/auth/renew_password", json={})
+    assert res.status_code == 400
+    assert res.get_json()["data"]["code"] == "reset_session_missing"
+
+def test_renew_password_missing_fields_is_400_not_500(client):
+    with client.session_transaction() as s:   # 模擬已經從信件點開重設連結
+        s["reset_user"] = "alice"
+    res = client.post("/auth/renew_password", json={})
+    assert res.status_code == 400
