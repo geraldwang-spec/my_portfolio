@@ -1,11 +1,10 @@
 # import gradiolib.video_gradio as vgdio
+import os
 from auth.auth_api import create_auth_bp
 from auth.login_controller import LoginController as loginC
 from auth.login_setting import session_cookies_config
 from flask import Blueprint, Flask, render_template
 from modules.errors import register_error_handlers
-from modules.Settings import require_env
-
 
 def create_app()->Flask:
     app:Flask = Flask(__name__)
@@ -42,5 +41,5 @@ if __name__ == "__main__":
 
     flask_app = create_app()
     # flask_app.run(host="0.0.0.0", debug=True, port=5000, use_reloader=False)
-    debug:bool = require_env("FLASK_DEBUG") == "1"
+    debug:bool = os.environ.get("FLASK_DEBUG", "0") == 1
     flask_app.run(host="0.0.0.0", debug=debug, port=5000)

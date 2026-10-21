@@ -56,6 +56,7 @@ services:
       - REDIS_IP=${REDIS_IP:?REDIS_IP not set}
       - MARIADB_IP=${MARIADB_IP:?MARIADB_IP not set}
       - MAIL_USERNAME=${MAIL_USERNAME:?MAIL_USERNAME not set}
+      - FLASK_DEBUG=${FLASK_DEBUG:-0}
     secrets:
       - secret_key
       - mysql_password
