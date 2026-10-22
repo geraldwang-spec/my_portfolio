@@ -17,7 +17,7 @@ def create_app(settings:basic_settings | None = None, services:Services | None =
 
     register_error_handlers(app=app)
 
-    services = build_services(
+    services = services or build_services(
         app=app,
         settings=settings
     )
