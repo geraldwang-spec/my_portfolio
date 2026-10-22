@@ -5,8 +5,9 @@ from auth.login_controller import LoginController as loginC
 from auth.login_setting import basic_settings, get_settings, mail_config, session_cookies_config
 from flask import Blueprint, Flask, render_template
 from modules.errors import register_error_handlers
+from modules.services import Services, build_services
 
-def create_app(settings:basic_settings | None = None)->Flask:
+def create_app(settings:basic_settings | None = None, services:Services | None = None)->Flask:
     settings = settings or get_settings()
     app:Flask = Flask(__name__)
     app.secret_key = settings.secret_key
@@ -16,8 +17,13 @@ def create_app(settings:basic_settings | None = None)->Flask:
 
     register_error_handlers(app=app)
 
-    loginCore:loginC = loginC(_app=app, settings=settings)
-    loginCore.init_core()
+    services = build_services(
+        app=app,
+        settings=settings
+    )
+    services.db.init_db()
+
+    loginCore:loginC = loginC(_app=app, services=services)
 
     auth_blueprint:Blueprint= create_auth_bp(loginCore)
     app.register_blueprint(blueprint=auth_blueprint)

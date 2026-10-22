@@ -9,6 +9,7 @@ from modules.mail_process import MailProcess as mailp
 from modules.sql_module import DatabaseManager, UserModule
 from werkzeug.security import check_password_hash, generate_password_hash
 from modules.redis_module import RedisClient, RedisSetting
+from modules.services import Services
 
 # from auth.login_process import LoginResponse 
 
@@ -16,30 +17,16 @@ from modules.redis_module import RedisClient, RedisSetting
 class LoginController:
     app: Flask
     __mailproc: mailp |None
-    __db_m:DatabaseManager|None
     __userProcess:user |None
     __rds:redisP |None
-    __setting:basic_settings
 
-    def __init__(self, _app:Flask, settings: basic_settings) -> None:
+    # def __init__(self, _app:Flask, settings: basic_settings) -> None:
+    def __init__(self, _app:Flask, services: Services) -> None:
         self.app = _app
-        self.__mailproc = None
-        self.__db_m = None
-        self.__userProcess = None
-        self.__gameUsers = []
-        self.__rds = None
-        self.__setting = settings
-
-    def init_core(self)->None:
-        self.__mailproc = mailp(self.app)
-        # self.__db_m = DatabaseManager()
-        self.__db_m = DatabaseManager(db_url=self.__setting.database_url)
-        self.__db_m.init_db()
-        self.__userProcess = user(db_manager=self.__db_m)
-        self.__rds = redisP(client=RedisClient(RedisSetting(
-            host=self.__setting.redis_ip,
-            password=self.__setting.redis_password,
-        )).get_connection())
+        self.__mailproc = services.mail
+        self.__userProcess = user(db_manager=services.db)
+        self.__rds = redisP(client=services.redis)
+        # self.__setting = settings
 
     def check_user_status(self, username:str, passwd:str):
         assert self.__userProcess is not None, "__userProcess should be init"
