@@ -2,34 +2,24 @@ import modules.secret_number
 from auth.login_process import UserData as user
 from auth.login_redis_process import LoginRedisProcess as redisP
 from auth.login_response import loginResponse
-from auth.login_setting import basic_settings
 from flask import Flask
 from modules.errors import APIError
-from modules.mail_process import MailProcess as mailp
-from modules.sql_module import DatabaseManager, UserModule
+from modules.sql_module import UserModule
 from werkzeug.security import check_password_hash, generate_password_hash
-from modules.redis_module import RedisClient, RedisSetting
 from modules.services import Services
 
 # from auth.login_process import LoginResponse 
 
 
 class LoginController:
-    app: Flask
-    __mailproc: mailp |None
-    __userProcess:user |None
-    __rds:redisP |None
 
-    # def __init__(self, _app:Flask, settings: basic_settings) -> None:
     def __init__(self, _app:Flask, services: Services) -> None:
         self.app = _app
         self.__mailproc = services.mail
         self.__userProcess = user(db_manager=services.db)
         self.__rds = redisP(client=services.redis)
-        # self.__setting = settings
 
     def check_user_status(self, username:str, passwd:str):
-        assert self.__userProcess is not None, "__userProcess should be init"
         user = self.__userProcess.get_user_by_username(username)
         if not user:
             return loginResponse(success= False, message= f"{username}未註冊", data= None)
@@ -43,7 +33,6 @@ class LoginController:
         return loginResponse(success=True, message="", data=user.username)
 
     def user_register(self, user_name:str, passwd:str, email:str)->loginResponse:
-        assert self.__userProcess is not None, "__userProcess should be init"
         user_c:UserModule | None = self.__userProcess.get_user_by_username(user_name)
 
         if user_c != None:
@@ -62,7 +51,6 @@ class LoginController:
             mail_check_number = modules.secret_number.generate_random_number(100000, 999999)
         )
 
-        assert self.__mailproc is not None, "__mailproc should be init"
         if not self.__mailproc.send_verify_mail(user=user_c):
             return loginResponse(success=False, message="驗證信寄送失敗，請稍後再試", data=None)
 
@@ -72,7 +60,6 @@ class LoginController:
         return loginResponse(success=True, message="", data=None)
 
     def get_check_mail(self, user_name:str, number:str)->loginResponse:
-        assert self.__userProcess is not None, "__userProcess should be init"
         user_c = self.__userProcess.get_user_by_username(user_name)
 
         if user_c == None:
@@ -87,9 +74,6 @@ class LoginController:
         return loginResponse(success=True, message="", data=None)
 
     def send_reset_password(self, username:str, email:str)->loginResponse:
-        assert self.__userProcess is not None, "__userProcess should be init"
-        assert self.__rds is not None, "__rds should be init"
-        assert self.__mailproc is not None, "__mailproc should be init"
         user_c:UserModule | None = self.__userProcess.get_user_by_username_and_mail(username, email)
 
         if not user_c:
@@ -127,8 +111,6 @@ class LoginController:
             data=None)
 
     def check_reset_id(self, user:str, reset_id:int)->loginResponse:
-        assert self.__rds is not None, "__rds should be init"
-        assert self.__userProcess is not None, "__userProcess should be init"
         user_c:UserModule | None = self.__userProcess.get_user_by_username(username=user)
 
         if not user_c:
@@ -158,8 +140,6 @@ class LoginController:
             data=None)
         
     def change_user_password(self, user:str, passwd:str, repeat:str)->loginResponse:
-        assert self.__userProcess is not None, "__userProcess should be init"
-        assert self.__rds is not None, "__rds should be init"
         if passwd != repeat:
             raise APIError(message="密碼不一致", status=400, code="password_mismatch")
         
