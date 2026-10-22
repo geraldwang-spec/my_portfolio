@@ -31,16 +31,11 @@ class UserData:
 
     def get_user_by_username(self, username:str) -> UserModule | None:
         with self._db_m.get_session() as session:
-            try:
-                stmt = select(UserModule).where(UserModule.username == username)
-                user = session.scalars(stmt).first()
-                if user:
-                    session.expunge(user)
-                return user
-            except SQLAlchemyError as e:
-                session.rollback()
-                print(f"get user db failed: {e}")
-                return None
+           stmt = select(UserModule).where(UserModule.username == username)
+           user = session.scalars(stmt).first()
+           if user:
+               session.expunge(user)
+           return user
 
     def get_user_by_mail(self, mail:str) -> UserModule | None:
         with self._db_m.get_session() as session:
