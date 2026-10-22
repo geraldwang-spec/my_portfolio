@@ -4,9 +4,10 @@ from auth.login_redis_process import LoginRedisProcess as redisP
 from auth.login_response import loginResponse
 from flask import Flask
 from modules.errors import APIError
+from modules.mail_process import MailProcess
+from modules.services import Services
 from modules.sql_module import UserModule
 from werkzeug.security import check_password_hash, generate_password_hash
-from modules.services import Services
 
 # from auth.login_process import LoginResponse 
 
@@ -14,10 +15,10 @@ from modules.services import Services
 class LoginController:
 
     def __init__(self, _app:Flask, services: Services) -> None:
-        self.app = _app
-        self.__mailproc = services.mail
-        self.__userProcess = user(db_manager=services.db)
-        self.__rds = redisP(client=services.redis)
+        self.app:Flask = _app
+        self.__mailproc:MailProcess = services.mail
+        self.__userProcess:user = user(db_manager=services.db)
+        self.__rds:redisP = redisP(client=services.redis)
 
     def check_user_status(self, username:str, passwd:str):
         user = self.__userProcess.get_user_by_username(username)
