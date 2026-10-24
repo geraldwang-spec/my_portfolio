@@ -5,7 +5,7 @@ from modules.errors import APIError
 from modules.utils import UtilsTools
 
 from auth.login_controller import LoginController as loginC
-from auth.login_response import loginResponse
+from modules.api_response import ApiResponse
 
 
 def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
@@ -17,7 +17,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
             return render_template(template_name_or_list=f"{mName}/login.html")
         data = request.get_json()
         if not isinstance(data, dict):
-            return loginResponse(
+            return ApiResponse(
                 success=False,
                 message="無效JSON格式",
                 data=None
@@ -29,13 +29,13 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
         passwd: str = raw_passwd.strip() if isinstance(raw_passwd, str) else ""
 
         if not username or not passwd:
-            return loginResponse(
+            return ApiResponse(
                 success=False,
                 message="帳號或密碼不可為空",
                 data=None
             ).to_response(), 400
 
-        res:loginResponse = loginCore.check_user_status(
+        res:ApiResponse = loginCore.check_user_status(
             username=username,
             passwd=passwd)
 
@@ -50,7 +50,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
     def register():
         data = request.get_json()
         if not isinstance(data, dict):
-            return loginResponse(
+            return ApiResponse(
                 success=False,
                 message="無效JSON格式",
                 data=None).to_response(), 400
@@ -64,13 +64,13 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
             isinstance(passwd, str) and
             isinstance(passwd_repeat, str) and
                 isinstance(email, str)):
-            return loginResponse(
+            return ApiResponse(
                 success=False,
                 message="請鎮寫完全部欄位",
                 data=None).to_response(), 400
 
         if passwd != passwd_repeat:
-            return loginResponse(
+            return ApiResponse(
                 success=False,
                 message="密碼不相同",
                 data=None).to_response(), 400
@@ -83,7 +83,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
 
     @auth_bp.route('/mailverify')
     def mail_verify():
-        res:loginResponse = loginCore.get_check_mail(
+        res:ApiResponse = loginCore.get_check_mail(
             user_name=request.args.get("user", ""), 
             number=request.args.get("mail_number", ""))
 
@@ -95,14 +95,14 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
     def reset_passwd_html():
         data = request.get_json()
         if not isinstance(data, dict):
-            return loginResponse(
+            return ApiResponse(
                 success=False,
                 message="無效JSON格式",
                 data=None).to_response(), 400
 
         user_name = data.get('reset-username')
         email = data.get('reset-email')
-        res:loginResponse = loginCore.send_reset_password(username=user_name, email=email)
+        res:ApiResponse = loginCore.send_reset_password(username=user_name, email=email)
 
         return res.to_response(), 200
 
@@ -117,7 +117,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
                 template_name_or_list="error.html",
                 error_message="連結無效，請重新申請重設密碼"), 400
 
-        res:loginResponse = loginCore.check_reset_id(
+        res:ApiResponse = loginCore.check_reset_id(
             user=user,
             reset_id=resetId)
 
@@ -142,7 +142,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
         if not isinstance(passwd, str) or not isinstance(repeat, str) or not passwd:
             raise APIError(message="請輸入新密碼", status=400, code="password_required")
 
-        res:loginResponse = loginCore.change_user_password(current_user, passwd, repeat)
+        res:ApiResponse = loginCore.change_user_password(current_user, passwd, repeat)
 
         session.pop("reset_user", None)
         return res.to_response(), 200
@@ -152,7 +152,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
     def me():
         name = session.get("user")
         if not name:
-            return loginResponse(
+            return ApiResponse(
                 success=False,
                 message="didn't login",
                 data=None).to_response(), 401
@@ -162,7 +162,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
     @auth_bp.route('/logout', methods=['POST'])
     def logout():
         session.clear()
-        return loginResponse(
+        return ApiResponse(
             success=True,
             message="logout",
             data=None).to_response(), 200

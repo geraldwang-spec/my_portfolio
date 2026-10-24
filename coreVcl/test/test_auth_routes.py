@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 from auth.auth_api import create_auth_bp
-from auth.login_response import loginResponse
+from modules.api_response import ApiResponse
 from modules.settings import session_cookies_config
 from flask import Flask
 from modules.errors import register_error_handlers
@@ -16,11 +16,11 @@ class FakeLoginCore:
 
     def check_user_status(self, username, passwd):
         if username == "alice" and passwd == "correct-pw":
-            return loginResponse(success=True, message="", data="alice")
-        return loginResponse(success=False, message="帳號或密碼錯誤", data=None)
+            return ApiResponse(success=True, message="", data="alice")
+        return ApiResponse(success=False, message="帳號或密碼錯誤", data=None)
 
     def check_reset_id(self, user, reset_id):
-        return loginResponse(success=False, message="連結無效", data=None)
+        return ApiResponse(success=False, message="連結無效", data=None)
 
 
 @pytest.fixture
