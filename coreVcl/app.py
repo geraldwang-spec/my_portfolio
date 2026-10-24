@@ -20,6 +20,7 @@ def create_app(
 ) -> Flask:
     settings = settings or get_settings()
     app: Flask = Flask(__name__)
+    # 不開 x_host：nginx 沒有覆寫 X-Forwarded-Host，使用者可以偽造（test_proxy_fix.py 有測試鎖住）
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
     app.secret_key = settings.secret_key
 
