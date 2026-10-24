@@ -1,67 +1,52 @@
+import logging
+
 from modules.sql_module import DatabaseManager, UserModule
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
+logger = logging.getLogger(__name__)
+
 
 class UserData:
-    _db_m:DatabaseManager
-    _pass_count:int
-
-    def __init__(self, db_manager:DatabaseManager ) -> None:
+    def __init__(self, db_manager: DatabaseManager) -> None:
         self._db_m = db_manager
-        self._pass_count:int = 0
 
-    def set_pass_count(self):
-        self._pass_count += 1
-
-    def get_pass_count(self):
-        return self._pass_count
-
-    # datebase process
+    # 查詢：DB 錯誤直接往上拋（由 error handler 回 500），None 只代表「查不到」
+    # 寫入：失敗時記 log 並回傳 False，由 controller 決定回應
     def create_user(self, user_data: UserModule)->bool:
         with self._db_m.get_session() as session:
             try:
                 session.add(user_data)
                 session.commit()
                 return True
-            except SQLAlchemyError as e:
+            except SQLAlchemyError:
                 session.rollback()
-                print(f"create user db failed: {e}")
+                logger.exception("create user failed")
                 return False
 
     def get_user_by_username(self, username:str) -> UserModule | None:
         with self._db_m.get_session() as session:
-           stmt = select(UserModule).where(UserModule.username == username)
-           user = session.scalars(stmt).first()
-           if user:
-               session.expunge(user)
-           return user
+            stmt = select(UserModule).where(UserModule.username == username)
+            user = session.scalars(stmt).first()
+            if user:
+                session.expunge(user)
+            return user
 
     def get_user_by_mail(self, mail:str) -> UserModule | None:
         with self._db_m.get_session() as session:
-            try:
-                stmt = select(UserModule).where(UserModule.mail == mail)
-                user = session.scalars(stmt).first()
-                if user:
-                    session.expunge(user)
-                return user
-            except SQLAlchemyError as e:
-                session.rollback()
-                print(f"get user db failed: {e}")
-                return None
+            stmt = select(UserModule).where(UserModule.mail == mail)
+            user = session.scalars(stmt).first()
+            if user:
+                session.expunge(user)
+            return user
 
     def get_user_by_username_and_mail(self, username:str, mail:str) -> UserModule|None:
         with self._db_m.get_session() as session:
-            try:
-                stmt = select(UserModule).where((UserModule.username == username) & (UserModule.mail == mail))
-                user = session.scalars(stmt).first()
-                if user:
-                    session.expunge(user)
-                return user
-            except SQLAlchemyError as e:
-                session.rollback()
-                print(f"get user db failed: {e}")
-                return None
+            stmt = select(UserModule).where((UserModule.username == username) & (UserModule.mail == mail))
+            user = session.scalars(stmt).first()
+            if user:
+                session.expunge(user)
+            return user
 
     def update_mail_ready(self, username:str, ready:bool) ->bool:
         with self._db_m.get_session() as session:
@@ -69,15 +54,15 @@ class UserData:
                 stmt = select(UserModule).where(UserModule.username == username)
                 user = session.scalars(stmt).first()
                 if not user:
-                    print(f"can't find user = {username}")
+                    logger.warning("update mail_ready: user not found")
                     return False
 
                 user.mail_ready = ready
                 session.commit()
                 return True
-            except SQLAlchemyError as e:
+            except SQLAlchemyError:
                 session.rollback()
-                print(f"Update mail ready db failed: {e}")
+                logger.exception("update mail_ready failed")
                 return False
 
     def update_password_by_user(self, user:str, pwd_hash:str)->bool:
@@ -86,19 +71,13 @@ class UserData:
                 stmt = select(UserModule).where(UserModule.username == user)
                 user_row = session.scalars(stmt).first()
                 if not user_row:
-                    print(f"can't find user = {user}")
+                    logger.warning("update password: user not found")
                     return False
                 
                 user_row.passwd = pwd_hash
                 session.commit()
                 return True
-            except SQLAlchemyError as e:
+            except SQLAlchemyError:
                 session.rollback()
-                print(f"Update passwd fail: {e}")
+                logger.exception("update password failed")
                 return False
-
-
-
-
-
-

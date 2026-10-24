@@ -1,4 +1,3 @@
-# import gradiolib.video_gradio as vgdio
 import os
 from auth.auth_api import create_auth_bp
 from auth.login_controller import LoginController
@@ -21,7 +20,6 @@ def create_app(settings:AppSettings | None = None, services:Services | None = No
         app=app,
         settings=settings
     )
-    # services.db.init_db()
 
     login_core = LoginController(app=app, services=services)
 
@@ -35,16 +33,6 @@ def create_app(settings:AppSettings | None = None, services:Services | None = No
     return app
 
 if __name__ == "__main__":
-    # gradio_thread = threading.Thread(
-    #     target=vgdio.create_and_launch_gradio,
-    #         kwargs={"server_name":"0.0.0.0", "server_port":7860},
-    #     daemon=True,
-    # )
-    #
-    # gradio_thread.start()
-
-
     flask_app = create_app()
-    # flask_app.run(host="0.0.0.0", debug=True, port=5000, use_reloader=False)
     debug:bool = os.environ.get("FLASK_DEBUG", "0") == "1"
     flask_app.run(host="0.0.0.0", debug=debug, port=5000)

@@ -9,8 +9,6 @@ from modules.services import Services
 from modules.sql_module import UserModule
 from werkzeug.security import check_password_hash, generate_password_hash
 
-# from auth.login_process import LoginResponse 
-
 
 class LoginController:
 
@@ -46,9 +44,7 @@ class LoginController:
             username = user_name,
             passwd = generate_password_hash(passwd),
             mail = email,
-            # name = name,
             mail_ready = False,
-            # mail_check_number = random.randint(1000, 9999),
             mail_check_number = modules.secret_number.generate_random_number(100000, 999999)
         )
 

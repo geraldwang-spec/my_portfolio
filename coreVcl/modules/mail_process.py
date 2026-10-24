@@ -24,13 +24,11 @@ class MailProcess:
         #  收件者，格式為list，否則報錯
         msg_recipients:list[str | tuple[str, str]] | None = [user.mail]
         #  郵件內容
-        # msg_body = 'Hey, I am mail body!'
         # 也可以利用html做內容
         msg_html:str = f'<h1>Hey, this is verify mail. Please click <a href=\"{base_url}/auth/mailverify?user={user.username}&mail_number={user.mail_check_number}\">this</a></h1>'
         msg = Message(subject=msg_title,
                       sender=msg_sender,
                       recipients=msg_recipients)
-        # msg.body = msg_body
         msg.html = msg_html
 
         return self._send(msg)
@@ -46,13 +44,11 @@ class MailProcess:
         #  收件者，格式為list，否則報錯
         msg_recipients:list[str | tuple[str, str]] | None = [user.mail]
         #  郵件內容
-        # msg_body = 'Hey, I am mail body!'
         # 也可以利用html做內容
         msg_html:str = f"<h1>Reset Password</h1><p>Hey, this is reset mail. <br>Please click <a href=\"{base_url}/auth/reset_passwd?user={user.username}&resetId={reset_nu}\">Here</a></p>"
         msg = Message(subject=msg_title,
                       sender=msg_sender,
                       recipients=msg_recipients)
-        # msg.body = msg_body
         msg.html = msg_html
 
         return self._send(msg)

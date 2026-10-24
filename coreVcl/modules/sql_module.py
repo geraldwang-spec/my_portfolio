@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import Boolean, Engine, Integer, String, create_engine
@@ -15,7 +14,6 @@ class UserModule(Base):
     username:Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     passwd:Mapped[str] = mapped_column(String(255), nullable=False)
     mail: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    # name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     mail_ready:Mapped[bool] = mapped_column(Boolean, nullable=False, default=False) 
     mail_check_number:Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     account_created:Mapped[datetime] = mapped_column(
@@ -26,21 +24,11 @@ class UserModule(Base):
         default=lambda: datetime.now(tz=timezone.utc).replace(microsecond=0)+timedelta(minutes=15)
     ) 
 
-@dataclass
-class GameModule:
-    user_name:str=""
-    user_choice:str=""
-    computer_choice:str = ""
-    result:str = ""
-    pass_count:int = 0
-
 class DatabaseManager:
     def __init__(self, db_url:str | URL = "sqlite:///login.db") -> None:
         self.engine: Engine = create_engine(db_url, echo=False)
         self._session_factory:sessionmaker[Session] = sessionmaker(bind=self.engine, expire_on_commit=False)
 
-    def init_db(self)->None:
-        Base.metadata.create_all(bind=self.engine)
 
     def get_session(self)->Session:
         return self._session_factory()
