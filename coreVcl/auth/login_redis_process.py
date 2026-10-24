@@ -2,6 +2,7 @@ import secrets
 from typing import Any
 
 import redis
+
 from modules.sql_module import UserModule
 
 
@@ -29,7 +30,7 @@ class LoginRedisProcess:
                 "username":user.username,
                 "email":user.mail,
                 "number":number
-            }, 
+            },
             ex_second=self._ex_second
         )
 
@@ -71,9 +72,9 @@ class LoginRedisProcess:
             r.delete(key)
 
         return False
-        
 
 
-        
+
+
 
 

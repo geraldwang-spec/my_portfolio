@@ -1,0 +1,10 @@
+# ruff 設定：本機、CI 用同一份，結果才會一致
+extend-exclude = ["coreVcl/gradiolib", "coreVcl/migrations/versions"]
+
+[lint]
+# E/W：pycodestyle、F：pyflakes、I：import 排序、N：命名慣例（PEP 8）
+extend-select = ["E", "W", "I", "N"]
+ignore = ["E501"]   # 行長度先不檢查，之後用 ruff format 統一處理
+
+[lint.isort]
+known-first-party = ["auth", "modules", "app"]

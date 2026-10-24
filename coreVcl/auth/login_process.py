@@ -1,8 +1,9 @@
 import logging
 
-from modules.sql_module import DatabaseManager, UserModule
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
+
+from modules.sql_module import DatabaseManager, UserModule
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,7 @@ class UserData:
                 if not user_row:
                     logger.warning("update password: user not found")
                     return False
-                
+
                 user_row.passwd = pwd_hash
                 session.commit()
                 return True

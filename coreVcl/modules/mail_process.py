@@ -12,7 +12,7 @@ class MailProcess:
     def __init__(self, app:Flask) -> None:
         self.mail = Mail(app)
         self.app = app
-        
+
     def send_verify_mail(self, user:UserModule)->bool:
         base_url = self._base_url()
         if base_url is None:

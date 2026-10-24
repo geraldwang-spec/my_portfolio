@@ -1,10 +1,11 @@
 """用真正的 create_app() 組出 app，只把設定換成測試用的"""
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.engine import make_url
+
 from app import create_app
 from modules.settings import AppSettings
-from sqlalchemy.engine import make_url
 from modules.sql_module import Base
-from sqlalchemy import create_engine
 
 
 @pytest.fixture

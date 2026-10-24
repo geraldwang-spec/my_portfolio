@@ -37,8 +37,9 @@ def test_downgrade_to_base(alembic_cfg):
 
 def test_upgrade_database_helper(tmp_path):
     # gunicorn on_starting 呼叫的就是這個函式
-    from modules.migrate import upgrade_database
     from sqlalchemy import create_engine, inspect
+
+    from modules.migrate import upgrade_database
 
     url = f"sqlite:///{tmp_path / 'g.db'}"
     upgrade_database(url)

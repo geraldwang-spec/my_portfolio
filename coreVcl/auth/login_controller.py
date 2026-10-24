@@ -1,13 +1,14 @@
+from flask import Flask
+from werkzeug.security import check_password_hash, generate_password_hash
+
 import modules.secret_number
 from auth.login_process import UserData
 from auth.login_redis_process import LoginRedisProcess
 from modules.api_response import ApiResponse
-from flask import Flask
 from modules.errors import APIError
 from modules.mail_process import MailProcess
 from modules.services import Services
 from modules.sql_module import UserModule
-from werkzeug.security import check_password_hash, generate_password_hash
 
 
 class LoginController:
@@ -61,10 +62,10 @@ class LoginController:
 
         if user_c is None:
             return ApiResponse(success=False,  message="註冊失敗，請重新註冊", data=None)
-    
+
         if not number.isdigit() or int(number) != user_c.mail_check_number:
             return ApiResponse(success=False, message="E-mail驗證失敗，請重新註冊", data=None)
-        
+
         if not self._users.update_mail_ready(user_name, True):
             return ApiResponse(success=False, message="註冊失敗，請重新註冊", data=None)
 
@@ -134,11 +135,11 @@ class LoginController:
             success=True,
             message="",
             data=None)
-        
+
     def change_user_password(self, user:str, passwd:str, repeat:str)->ApiResponse:
         if passwd != repeat:
             raise APIError(message="密碼不一致", status=400, code="password_mismatch")
-        
+
         if not self._users.update_password_by_user(user, generate_password_hash(passwd)):
             raise APIError(
                 message="更新密碼失敗，請重新設定",

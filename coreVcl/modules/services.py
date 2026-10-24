@@ -2,10 +2,12 @@ from dataclasses import dataclass
 
 import redis
 from flask import Flask
-from modules.settings import AppSettings
+
 from modules.mail_process import MailProcess
 from modules.redis_module import RedisClient, RedisSetting
+from modules.settings import AppSettings
 from modules.sql_module import DatabaseManager
+
 
 @dataclass(frozen=True)
 class Services:

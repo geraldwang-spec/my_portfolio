@@ -1,16 +1,16 @@
 from typing import Any
 
 from flask import Blueprint, render_template, request, session
-from modules.errors import APIError
-from modules.utils import UtilsTools
 
 from auth.login_controller import LoginController
 from modules.api_response import ApiResponse
+from modules.errors import APIError
+from modules.utils import UtilsTools
 
 
 def create_auth_bp(login_core: LoginController, name: str = "auth") -> Blueprint:
     auth_bp = Blueprint(name, __name__, url_prefix=f"/{name}")
-    
+
     @auth_bp.route('/login', methods=['POST', "GET"])
     def login():
         if request.method == "GET":
@@ -84,7 +84,7 @@ def create_auth_bp(login_core: LoginController, name: str = "auth") -> Blueprint
     @auth_bp.route('/mailverify')
     def mail_verify():
         res:ApiResponse = login_core.get_check_mail(
-            user_name=request.args.get("user", ""), 
+            user_name=request.args.get("user", ""),
             number=request.args.get("mail_number", ""))
 
         if not res.success:

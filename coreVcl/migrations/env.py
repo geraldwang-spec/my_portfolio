@@ -5,7 +5,7 @@ from alembic import context
 from sqlalchemy import create_engine, pool
 
 from modules.settings import get_database_url
-from modules.sql_module import Base   # 所有 model 都繼承 Base，autogenerate 靠它比對
+from modules.sql_module import Base  # 所有 model 都繼承 Base，autogenerate 靠它比對
 
 config = context.config
 if config.config_file_name is not None:

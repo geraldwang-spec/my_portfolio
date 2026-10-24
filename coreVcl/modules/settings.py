@@ -8,6 +8,7 @@ from pathlib import Path
 
 from sqlalchemy.engine import URL
 
+
 def read_secret(name:str)->str:
     secrets_dir:Path = Path(os.environ.get("SECRETS_DIR", "/run/secrets"))
     path = secrets_dir / name
@@ -78,7 +79,7 @@ def get_database_url()->URL:
             password = read_secret("mysql_password"),
             host = require_env("MARIADB_IP"),
             port = 3306,
-            database = require_env("MYSQL_DATABASE"), 
+            database = require_env("MYSQL_DATABASE"),
     )
 
 
@@ -103,4 +104,4 @@ def mail_config(settings: AppSettings)->dict[str, object]:
         "MAIL_USERNAME": settings.mail_username,
         "MAIL_PASSWORD": settings.mail_password,
     }
-    
+

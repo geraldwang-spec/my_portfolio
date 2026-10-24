@@ -1,10 +1,18 @@
 import os
+
+from flask import Blueprint, Flask, render_template
+
 from auth.auth_api import create_auth_bp
 from auth.login_controller import LoginController
-from modules.settings import AppSettings, get_settings, mail_config, session_cookies_config
-from flask import Blueprint, Flask, render_template
 from modules.errors import register_error_handlers
 from modules.services import Services, build_services
+from modules.settings import (
+    AppSettings,
+    get_settings,
+    mail_config,
+    session_cookies_config,
+)
+
 
 def create_app(settings:AppSettings | None = None, services:Services | None = None)->Flask:
     settings = settings or get_settings()

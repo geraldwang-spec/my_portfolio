@@ -14,15 +14,15 @@ class UserModule(Base):
     username:Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     passwd:Mapped[str] = mapped_column(String(255), nullable=False)
     mail: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    mail_ready:Mapped[bool] = mapped_column(Boolean, nullable=False, default=False) 
+    mail_ready:Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     mail_check_number:Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     account_created:Mapped[datetime] = mapped_column(
-        nullable= False, 
+        nullable= False,
         default=lambda: datetime.now(timezone.utc))
     mail_check_time:Mapped[datetime] = mapped_column(
         unique=False,
         default=lambda: datetime.now(tz=timezone.utc).replace(microsecond=0)+timedelta(minutes=15)
-    ) 
+    )
 
 class DatabaseManager:
     def __init__(self, db_url:str | URL = "sqlite:///login.db") -> None:

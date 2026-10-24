@@ -2,11 +2,12 @@
 from pathlib import Path
 
 import pytest
+from flask import Flask
+
 from auth.auth_api import create_auth_bp
 from modules.api_response import ApiResponse
-from modules.settings import session_cookies_config
-from flask import Flask
 from modules.errors import register_error_handlers
+from modules.settings import session_cookies_config
 
 TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
 

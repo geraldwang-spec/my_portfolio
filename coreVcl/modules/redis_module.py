@@ -21,6 +21,6 @@ class RedisClient:
     def get_connection(self)-> redis.Redis:
         return redis.Redis(connection_pool=self._pool)
 
-    
+
 
 

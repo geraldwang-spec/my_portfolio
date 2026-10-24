@@ -1,5 +1,6 @@
 # test/test_errors.py
 from flask import Flask
+
 from modules.errors import APIError, register_error_handlers
 
 
