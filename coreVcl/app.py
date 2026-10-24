@@ -1,7 +1,7 @@
 # import gradiolib.video_gradio as vgdio
 import os
 from auth.auth_api import create_auth_bp
-from auth.login_controller import LoginController as loginC
+from auth.login_controller import LoginController
 from modules.settings import AppSettings, get_settings, mail_config, session_cookies_config
 from flask import Blueprint, Flask, render_template
 from modules.errors import register_error_handlers
@@ -23,9 +23,9 @@ def create_app(settings:AppSettings | None = None, services:Services | None = No
     )
     # services.db.init_db()
 
-    loginCore:loginC = loginC(_app=app, services=services)
+    login_core = LoginController(app=app, services=services)
 
-    auth_blueprint:Blueprint= create_auth_bp(loginCore)
+    auth_blueprint:Blueprint= create_auth_bp(login_core)
     app.register_blueprint(blueprint=auth_blueprint)
 
     @app.route('/')

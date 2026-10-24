@@ -4,17 +4,17 @@ from flask import Blueprint, render_template, request, session
 from modules.errors import APIError
 from modules.utils import UtilsTools
 
-from auth.login_controller import LoginController as loginC
+from auth.login_controller import LoginController
 from modules.api_response import ApiResponse
 
 
-def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
-    auth_bp = Blueprint(mName, __name__, url_prefix=f"/{mName}")
+def create_auth_bp(login_core: LoginController, name: str = "auth") -> Blueprint:
+    auth_bp = Blueprint(name, __name__, url_prefix=f"/{name}")
     
     @auth_bp.route('/login', methods=['POST', "GET"])
     def login():
         if request.method == "GET":
-            return render_template(template_name_or_list=f"{mName}/login.html")
+            return render_template(template_name_or_list=f"{name}/login.html")
         data = request.get_json()
         if not isinstance(data, dict):
             return ApiResponse(
@@ -35,7 +35,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
                 data=None
             ).to_response(), 400
 
-        res:ApiResponse = loginCore.check_user_status(
+        res:ApiResponse = login_core.check_user_status(
             username=username,
             passwd=passwd)
 
@@ -75,7 +75,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
                 message="密碼不相同",
                 data=None).to_response(), 400
 
-        return loginCore.user_register(
+        return login_core.user_register(
             user_name=user_name,
             passwd= passwd,
             email=email
@@ -83,7 +83,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
 
     @auth_bp.route('/mailverify')
     def mail_verify():
-        res:ApiResponse = loginCore.get_check_mail(
+        res:ApiResponse = login_core.get_check_mail(
             user_name=request.args.get("user", ""), 
             number=request.args.get("mail_number", ""))
 
@@ -102,14 +102,14 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
 
         user_name = data.get('reset-username')
         email = data.get('reset-email')
-        res:ApiResponse = loginCore.send_reset_password(username=user_name, email=email)
+        res:ApiResponse = login_core.send_reset_password(username=user_name, email=email)
 
         return res.to_response(), 200
 
     @auth_bp.route('/reset_passwd')
     def reset_passwd_by_user():
         user = request.args.get("user","")
-        result_ok, resetId = UtilsTools.try_parse_int(request.args.get("resetId",""))
+        result_ok, reset_id = UtilsTools.try_parse_int(request.args.get("resetId",""))
 
         if not result_ok:
             # 這是使用者從信件點開的網頁，錯誤時顯示錯誤頁而不是 JSON
@@ -117,14 +117,14 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
                 template_name_or_list="error.html",
                 error_message="連結無效，請重新申請重設密碼"), 400
 
-        res:ApiResponse = loginCore.check_reset_id(
+        res:ApiResponse = login_core.check_reset_id(
             user=user,
-            reset_id=resetId)
+            reset_id=reset_id)
 
         if not res.success:
             return render_template(template_name_or_list="error.html", error_message=res.message), 400
         session["reset_user"] = user
-        return render_template(f"{mName}/reset_passwd.html")
+        return render_template(f"{name}/reset_passwd.html")
 
     @auth_bp.route('/renew_password', methods=['POST'])
     def renew_passwd():
@@ -142,7 +142,7 @@ def create_auth_bp(loginCore:loginC, mName:str = "auth")->Blueprint:
         if not isinstance(passwd, str) or not isinstance(repeat, str) or not passwd:
             raise APIError(message="請輸入新密碼", status=400, code="password_required")
 
-        res:ApiResponse = loginCore.change_user_password(current_user, passwd, repeat)
+        res:ApiResponse = login_core.change_user_password(current_user, passwd, repeat)
 
         session.pop("reset_user", None)
         return res.to_response(), 200

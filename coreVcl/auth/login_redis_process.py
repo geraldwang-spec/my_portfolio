@@ -7,14 +7,14 @@ from modules.sql_module import UserModule
 
 class LoginRedisProcess:
     MAX_ATTEMPTS:int = 5
-    __ex_second:int = 300
+    _ex_second:int = 300
 
     def __init__(self, client:redis.Redis) -> None:
         self._rds: redis.Redis = client
 
-    def get_reset_user_data(self, userId:int) ->dict[str,Any] | None:
+    def get_reset_user_data(self, user_id:int) ->dict[str,Any] | None:
         r:redis.Redis = self._rds
-        data:dict[str, Any] = r.hgetall(f"reset:auth:{userId}")
+        data:dict[str, Any] = r.hgetall(f"reset:auth:{user_id}")
 
         if not data:
             return None
@@ -22,7 +22,7 @@ class LoginRedisProcess:
         return data
 
     def reset_password_number(self, user:UserModule, number:int)->tuple[bool, str]:
-        successed:bool = self.__set_hash_with_ttl(
+        successed:bool = self._set_hash_with_ttl(
             r=self._rds,
             key=f"reset:auth:{user.id}",
             mapping={
@@ -30,15 +30,15 @@ class LoginRedisProcess:
                 "email":user.mail,
                 "number":number
             }, 
-            ex_second=self.__ex_second
+            ex_second=self._ex_second
         )
 
-        if successed == False:
-            return successed, f"請於{int(self.__ex_second/60)}分鐘之後在操作"
+        if not successed:
+            return successed, f"請於{int(self._ex_second/60)}分鐘之後在操作"
 
         return True, ""
 
-    def __set_hash_with_ttl(self, r:redis.Redis, key:str, mapping:dict[str, str|int], ex_second:int) ->bool:
+    def _set_hash_with_ttl(self, r:redis.Redis, key:str, mapping:dict[str, str|int], ex_second:int) ->bool:
         if r.exists(key):
             return False
 
@@ -55,9 +55,9 @@ class LoginRedisProcess:
 
         return bool(result)
 
-    def verify_reset_number(self, userId:int, reset_id:int) -> bool:
+    def verify_reset_number(self, user_id:int, reset_id:int) -> bool:
         r:redis.Redis = self._rds
-        key:str = f"reset:auth:{userId}"
+        key:str = f"reset:auth:{user_id}"
 
         data:dict[str, Any] = r.hgetall(key)
         if not data:

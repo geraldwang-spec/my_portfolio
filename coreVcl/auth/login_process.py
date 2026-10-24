@@ -5,17 +5,17 @@ from sqlalchemy.exc import SQLAlchemyError
 
 class UserData:
     _db_m:DatabaseManager
-    __pass_count:int
+    _pass_count:int
 
     def __init__(self, db_manager:DatabaseManager ) -> None:
         self._db_m = db_manager
-        self.__pass_count:int = 0
+        self._pass_count:int = 0
 
     def set_pass_count(self):
-        self.__pass_count += 1
+        self._pass_count += 1
 
     def get_pass_count(self):
-        return self.__pass_count
+        return self._pass_count
 
     # datebase process
     def create_user(self, user_data: UserModule)->bool:
@@ -80,16 +80,16 @@ class UserData:
                 print(f"Update mail ready db failed: {e}")
                 return False
 
-    def update_password_by_user(self, user:str, pwdHash:str)->bool:
+    def update_password_by_user(self, user:str, pwd_hash:str)->bool:
         with self._db_m.get_session() as session:
             try:
                 stmt = select(UserModule).where(UserModule.username == user)
-                userM = session.scalars(stmt).first()
-                if not userM:
+                user_row = session.scalars(stmt).first()
+                if not user_row:
                     print(f"can't find user = {user}")
                     return False
                 
-                userM.passwd = pwdHash
+                user_row.passwd = pwd_hash
                 session.commit()
                 return True
             except SQLAlchemyError as e:

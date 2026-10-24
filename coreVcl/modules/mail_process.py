@@ -14,7 +14,7 @@ class MailProcess:
         self.app = app
         
     def send_verify_mail(self, user:UserModule)->bool:
-        base_url = self.__base_url()
+        base_url = self._base_url()
         if base_url is None:
             return False
 
@@ -33,10 +33,10 @@ class MailProcess:
         # msg.body = msg_body
         msg.html = msg_html
 
-        return self.__send(msg)
+        return self._send(msg)
 
     def send_reset_mail(self, user:UserModule, reset_nu:int)->bool:
-        base_url = self.__base_url()
+        base_url = self._base_url()
         if base_url is None:
             return False
 
@@ -55,16 +55,16 @@ class MailProcess:
         # msg.body = msg_body
         msg.html = msg_html
 
-        return self.__send(msg)
+        return self._send(msg)
 
-    def __base_url(self)->str | None:
+    def _base_url(self)->str | None:
         try:
             return public_base_url()
         except RuntimeError:
             self.app.logger.exception("取得對外網址失敗，無法寄信")
             return None
 
-    def __send(self, msg:Message)->bool:
+    def _send(self, msg:Message)->bool:
         #  同步寄送，才能知道是否寄送成功
         try:
             with self.app.app_context():

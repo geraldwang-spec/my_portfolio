@@ -13,13 +13,13 @@ class RedisSetting:
     password:str | None = ""
 
 class RedisClient:
-    __pool:redis.ConnectionPool
+    _pool:redis.ConnectionPool
 
     def __init__(self,  setting:RedisSetting ) -> None:
-        self.__pool = redis.ConnectionPool(**asdict(obj=setting))
+        self._pool = redis.ConnectionPool(**asdict(obj=setting))
 
     def get_connection(self)-> redis.Redis:
-        return redis.Redis(connection_pool=self.__pool)
+        return redis.Redis(connection_pool=self._pool)
 
     
 

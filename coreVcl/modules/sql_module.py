@@ -37,12 +37,12 @@ class GameModule:
 class DatabaseManager:
     def __init__(self, db_url:str | URL = "sqlite:///login.db") -> None:
         self.engine: Engine = create_engine(db_url, echo=False)
-        self.__session_factory:sessionmaker[Session] = sessionmaker(bind=self.engine, expire_on_commit=False)
+        self._session_factory:sessionmaker[Session] = sessionmaker(bind=self.engine, expire_on_commit=False)
 
     def init_db(self)->None:
         Base.metadata.create_all(bind=self.engine)
 
     def get_session(self)->Session:
-        return self.__session_factory()
+        return self._session_factory()
 
 
