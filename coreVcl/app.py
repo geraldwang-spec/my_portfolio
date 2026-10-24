@@ -21,7 +21,7 @@ def create_app(settings:basic_settings | None = None, services:Services | None =
         app=app,
         settings=settings
     )
-    services.db.init_db()
+    # services.db.init_db()
 
     loginCore:loginC = loginC(_app=app, services=services)
 

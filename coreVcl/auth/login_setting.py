@@ -26,15 +26,19 @@ def get_settings()->basic_settings:
         secret_key = read_secret("secret_key"),
         mail_username= require_env("MAIL_USERNAME"),
         mail_password = read_secret("mail_password"),
-        database_url = URL.create(
+        database_url = get_database_url(),
+    )
+
+def get_database_url()->URL:
+    return URL.create(
             drivername = "mysql+pymysql",
             username = require_env("MYSQL_USER"),
             password = read_secret("mysql_password"),
             host = require_env("MARIADB_IP"),
             port = 3306,
             database = require_env("MYSQL_DATABASE"), 
-        ),
     )
+
 
 def session_cookies_config()->dict[str,object]:
     return {

@@ -3,6 +3,8 @@ import pytest
 from app import create_app
 from auth.login_setting import basic_settings
 from sqlalchemy.engine import make_url
+from modules.sql_module import Base
+from sqlalchemy import create_engine
 
 
 @pytest.fixture
@@ -20,6 +22,7 @@ def settings(tmp_path):
 
 @pytest.fixture
 def client(settings):
+    Base.metadata.create_all(create_engine(settings.database_url))
     app = create_app(settings=settings)
     client = app.test_client()
     client.environ_base["wsgi.url_scheme"] = "https"   # Secure cookie 需要 HTTPS

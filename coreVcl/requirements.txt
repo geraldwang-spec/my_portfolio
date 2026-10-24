@@ -11,3 +11,5 @@ transformers
 pydantic
 redis
 pytest
+alembic
+gunicorn
