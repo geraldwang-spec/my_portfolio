@@ -4,7 +4,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import create_engine, pool
 
-from auth.login_setting import get_database_url
+from modules.settings import get_database_url
 from modules.sql_module import Base   # 所有 model 都繼承 Base，autogenerate 靠它比對
 
 config = context.config

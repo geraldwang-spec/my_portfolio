@@ -2,12 +2,12 @@
 import os
 from auth.auth_api import create_auth_bp
 from auth.login_controller import LoginController as loginC
-from auth.login_setting import basic_settings, get_settings, mail_config, session_cookies_config
+from modules.settings import AppSettings, get_settings, mail_config, session_cookies_config
 from flask import Blueprint, Flask, render_template
 from modules.errors import register_error_handlers
 from modules.services import Services, build_services
 
-def create_app(settings:basic_settings | None = None, services:Services | None = None)->Flask:
+def create_app(settings:AppSettings | None = None, services:Services | None = None)->Flask:
     settings = settings or get_settings()
     app:Flask = Flask(__name__)
     app.secret_key = settings.secret_key

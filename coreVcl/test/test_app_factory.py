@@ -1,7 +1,7 @@
 """用真正的 create_app() 組出 app，只把設定換成測試用的"""
 import pytest
 from app import create_app
-from auth.login_setting import basic_settings
+from modules.settings import AppSettings
 from sqlalchemy.engine import make_url
 from modules.sql_module import Base
 from sqlalchemy import create_engine
@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 @pytest.fixture
 def settings(tmp_path):
     # 測試用設定：DB 換成暫存資料夾裡的 SQLite 檔，其他給假值
-    return basic_settings(
+    return AppSettings(
         secret_key="test-only",
         mail_username="test@example.com",
         mail_password="unused",

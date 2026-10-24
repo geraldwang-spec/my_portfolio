@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from auth.auth_api import create_auth_bp
 from auth.login_response import loginResponse
-from auth.login_setting import session_cookies_config
+from modules.settings import session_cookies_config
 from flask import Flask
 from modules.errors import register_error_handlers
 

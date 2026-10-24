@@ -1,12 +1,54 @@
+"""整個 app 的設定：環境變數、/run/secrets，以及由它們組出來的 Flask 設定"""
+import json
+import os
+import urllib.request
 from dataclasses import dataclass
 from datetime import timedelta
+from pathlib import Path
 
-from modules.Settings import read_secret, require_env
 from sqlalchemy.engine import URL
+
+def read_secret(name:str)->str:
+    secrets_dir:Path = Path(os.environ.get("SECRETS_DIR", "/run/secrets"))
+    path = secrets_dir / name
+
+    if path.is_file():
+        return path.read_text(encoding="utf-8").strip()
+
+    raise RuntimeError(f"找不到機密 {name!r}：{path} 不存在")
+
+def require_env(name:str)->str:
+    if value := os.environ.get(name):
+        return value
+
+    raise RuntimeError(f"環境變數 {name} 未設定")
+
+def public_base_url() -> str:
+    """對外網址，結尾不含斜線，例如 https://xxxx.trycloudflare.com
+
+    - 有 PUBLIC_BASE_URL（正式環境的固定網域）就直接用
+    - 否則向 cloudflared 查詢目前的 quick tunnel 網址
+    刻意不快取：tunnel 容器重啟後網址會變，每次寄信時重新查詢。
+    """
+    if fixed := os.environ.get("PUBLIC_BASE_URL"):
+        return fixed.rstrip("/")
+
+    metrics = os.environ.get("TUNNEL_METRICS_URL", "http://vcl_tunnel:2000")
+    try:
+        with urllib.request.urlopen(f"{metrics}/quicktunnel", timeout=3) as resp:
+            hostname = json.load(resp)["hostname"]
+    except (OSError, KeyError, ValueError) as exc:
+        # OSError：連不上；KeyError：回傳格式不對；ValueError：不是 JSON
+        raise RuntimeError(f"無法從 {metrics}/quicktunnel 取得 tunnel 網址") from exc
+
+    if not hostname:
+        # tunnel 剛啟動、還沒連上 Cloudflare 時會回傳空字串
+        raise RuntimeError("tunnel 尚未取得網址，請稍後再試")
+    return f"https://{hostname}"
 
 
 @dataclass(frozen=True)
-class basic_settings:
+class AppSettings:
     secret_key:str
     mail_username:str
     mail_password:str
@@ -19,8 +61,8 @@ class basic_settings:
        return f"Settings(mail_username={self.mail_username!r}, redis_ip={self.redis_ip!r}, db={self.database_url!r})"
 
 
-def get_settings()->basic_settings:
-    return basic_settings(
+def get_settings()-> AppSettings:
+    return AppSettings(
         redis_ip = require_env("REDIS_IP"),
         redis_password= read_secret("redis_password"),
         secret_key = read_secret("secret_key"),
@@ -51,7 +93,7 @@ def session_cookies_config()->dict[str,object]:
         "SESSION_COOKIE_NAME": "__Host-session",
     }
 
-def mail_config(settings: basic_settings)->dict[str, object]:
+def mail_config(settings: AppSettings)->dict[str, object]:
     """Flask-Mail 需要的設定，原本寫在 LoginController.init_core 裡"""
     return {
         "MAIL_SERVER": "smtp.gmail.com",
