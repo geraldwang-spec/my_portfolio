@@ -1,0 +1,8 @@
+# Database migrations
+
+Schema is managed only by Alembic. `create_app()` does not create tables.
+
+- Apply: runs automatically on startup (gunicorn `on_starting`), or `alembic upgrade head`
+- New migration: change the model, then `alembic revision --autogenerate -m "..."`, and review the generated file
+- Back up with `mariadb-dump` before every deployment (MariaDB DDL is not transactional)
+- Existing database created by `create_all`: run `alembic stamp head` once

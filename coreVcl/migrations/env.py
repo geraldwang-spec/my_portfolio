@@ -1,0 +1,59 @@
+"""Alembic 執行環境：決定連到哪個資料庫、比對哪些 model"""
+from logging.config import fileConfig
+
+from alembic import context
+from sqlalchemy import create_engine, pool
+
+from auth.login_setting import get_database_url
+from modules.sql_module import Base   # 所有 model 都繼承 Base，autogenerate 靠它比對
+
+config = context.config
+if config.config_file_name is not None:
+    # disable_existing_loggers=False：從 gunicorn／Flask 內呼叫時，不能把它們的 logger 關掉
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
+
+target_metadata = Base.metadata
+
+
+def _database_url() -> str:
+    """決定要連哪個資料庫，優先順序：
+    1. pytest 傳入的 config.attributes["dburl"]
+    2. 命令列 -x dburl=sqlite:///...（產生 migration、手動測試時用）
+    3. 正式設定：容器內的環境變數 + /run/secrets
+    """
+    if url := config.attributes.get("dburl"):
+        return url
+    x_args = context.get_x_argument(as_dictionary=True)
+    if "dburl" in x_args:
+        return x_args["dburl"]
+    return get_database_url().render_as_string(hide_password=False)
+
+
+def run_migrations_offline() -> None:
+    """--sql 模式：只輸出 SQL，不連線"""
+    context.configure(
+        url=_database_url(),
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def run_migrations_online() -> None:
+    engine = create_engine(_database_url(), poolclass=pool.NullPool)
+    with engine.connect() as connection:
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            render_as_batch=connection.dialect.name == "sqlite",  # SQLite 改欄位需要 batch 模式
+        )
+        with context.begin_transaction():
+            context.run_migrations()
+
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
