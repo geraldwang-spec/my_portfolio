@@ -6,7 +6,7 @@ from flask import Flask
 
 from auth.auth_api import create_auth_bp
 from modules.api_response import ApiResponse
-from modules.errors import register_error_handlers
+from modules.errors import APIError, register_error_handlers
 from modules.settings import session_cookies_config
 
 TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
@@ -17,8 +17,8 @@ class FakeLoginCore:
 
     def check_user_status(self, username, passwd):
         if username == "alice" and passwd == "correct-pw":
-            return ApiResponse(success=True, message="", data="alice")
-        return ApiResponse(success=False, message="帳號或密碼錯誤", data=None)
+            return "alice"
+        raise APIError("帳號或密碼錯誤", status=401, code="invalid_credentials")
 
     def check_reset_id(self, user, reset_id):
         return ApiResponse(success=False, message="連結無效", data=None)

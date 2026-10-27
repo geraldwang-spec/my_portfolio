@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 
 from flask import Blueprint, Flask, render_template
@@ -23,6 +24,7 @@ def create_app(
     # 不開 x_host：nginx 沒有覆寫 X-Forwarded-Host，使用者可以偽造（test_proxy_fix.py 有測試鎖住）
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
     app.secret_key = settings.secret_key
+    app.permanent_session_lifetime = timedelta(hours=8)
 
     app.config.update(session_cookies_config())
     app.config.update(mail_config(settings))

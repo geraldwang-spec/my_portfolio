@@ -46,9 +46,9 @@ class LoginController:
 
         if not user.mail_ready:
             raise APIError(message="E-mail 尚未驗證，請先完成驗證", status=403, code="email_not_verified")
-        
+
         return user.username
-        
+
     def user_register(self, user_name:str, passwd:str, email:str)->ApiResponse:
         user_c:UserModule | None = self._users.get_user_by_username(user_name)
 

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import Boolean, Engine, Integer, String, create_engine
 from sqlalchemy.engine import URL
@@ -18,10 +18,10 @@ class UserModule(Base):
     mail_check_number:Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     account_created:Mapped[datetime] = mapped_column(
         nullable= False,
-        default=lambda: datetime.now(timezone.utc))
+        default=lambda: datetime.now(UTC))
     mail_check_time:Mapped[datetime] = mapped_column(
         unique=False,
-        default=lambda: datetime.now(tz=timezone.utc).replace(microsecond=0)+timedelta(minutes=15)
+        default=lambda: datetime.now(tz=UTC).replace(microsecond=0)+timedelta(minutes=15)
     )
 
 class DatabaseManager:

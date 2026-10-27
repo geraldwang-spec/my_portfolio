@@ -1,17 +1,14 @@
 """用真正的 create_app() 組出 app，只把設定換成測試用的"""
-from base64 import decode
 import fakeredis
 import pytest
 from flask import Flask
 from sqlalchemy.engine import make_url
 
 from app import create_app
-from modules import services
 from modules.mail_process import MailProcess
 from modules.services import Services
 from modules.settings import AppSettings
 from modules.sql_module import Base, DatabaseManager
-
 
 
 @pytest.fixture
