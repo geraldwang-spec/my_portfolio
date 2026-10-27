@@ -11,8 +11,8 @@ class LoginRedisProcess:
     MAX_ATTEMPTS:int = 5
     _ex_second:int = 300
 
-    LOGIN_MAX_FAILS: int =5
-    LOGIN_LOCK_SECONDS: int = 5
+    LOGIN_MAX_FAILS: int = 5
+    LOGIN_LOCK_SECONDS: int = 15 * 60 # 15分鐘
 
     def __init__(self, client:redis.Redis) -> None:
         self._rds: redis.Redis = client
