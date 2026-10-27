@@ -1,11 +1,17 @@
 """用真正的 create_app() 組出 app，只把設定換成測試用的"""
+from base64 import decode
+import fakeredis
 import pytest
-from sqlalchemy import create_engine
+from flask import Flask
 from sqlalchemy.engine import make_url
 
 from app import create_app
+from modules import services
+from modules.mail_process import MailProcess
+from modules.services import Services
 from modules.settings import AppSettings
-from modules.sql_module import Base
+from modules.sql_module import Base, DatabaseManager
+
 
 
 @pytest.fixture
@@ -23,8 +29,16 @@ def settings(tmp_path):
 
 @pytest.fixture
 def client(settings):
-    Base.metadata.create_all(create_engine(settings.database_url))
-    app = create_app(settings=settings)
+    # Base.metadata.create_all(create_engine(settings.database_url))
+    # app = create_app(settings=settings)
+    db = DatabaseManager(db_url=settings.database_url)
+    Base.metadata.create_all(db.engine)
+    services = Services(
+        db=db,
+        redis=fakeredis.FakeRedis(decode_responses=True),
+        mail=MailProcess(Flask("test-mail")),
+    )
+    app = create_app(settings=settings, services=services)
     client = app.test_client()
     client.environ_base["wsgi.url_scheme"] = "https"   # Secure cookie 需要 HTTPS
     return client

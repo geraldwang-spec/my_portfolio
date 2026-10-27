@@ -2,6 +2,7 @@ import secrets
 from typing import Any
 
 import redis
+from sqlalchemy import delete
 
 from modules.sql_module import UserModule
 
@@ -9,6 +10,9 @@ from modules.sql_module import UserModule
 class LoginRedisProcess:
     MAX_ATTEMPTS:int = 5
     _ex_second:int = 300
+
+    LOGIN_MAX_FAILS: int =5
+    LOGIN_LOCK_SECONDS: int = 5
 
     def __init__(self, client:redis.Redis) -> None:
         self._rds: redis.Redis = client
@@ -73,7 +77,27 @@ class LoginRedisProcess:
 
         return False
 
+    # ---- 登入失敗計數：以「送出的帳號名稱」為 key，不管帳號存不存在 ----
+    # 不存在的帳號也一樣計數、一樣鎖定，否則「會不會被鎖」本身就會洩漏帳號是否存在
+    
+    @staticmethod
+    def _login_key(username:str)->str:
+        return f"login:fail:{username.lower()}"
 
+    def is_login_locked(self, username:str)->bool:
+        count = self._rds.get(self._login_key(username))
+        return int(count or 0) >= self.LOGIN_MAX_FAILS
+
+    def record_login_failure(self, username:str) -> int:
+        key = self._login_key(username)
+        pipe = self._rds.pipeline()
+        pipe.incr(key)
+        pipe.expire(key, self.LOGIN_LOCK_SECONDS, nx=True)
+        count, _ = pipe.execute()
+        return int(count)
+
+    def clear_login_failure(self, username:str)->None:
+        self._rds.delete(self._login_key(username))
 
 
 

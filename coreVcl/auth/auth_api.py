@@ -35,16 +35,10 @@ def create_auth_bp(login_core: LoginController, name: str = "auth") -> Blueprint
                 data=None
             ).to_response(), 400
 
-        res:ApiResponse = login_core.check_user_status(
-            username=username,
-            passwd=passwd)
+        user_name = login_core.check_user_status(username=username, passwd=passwd)
 
-        if not res.success:
-            return res.to_response(), 401
-        session.clear()
-        session.permanent = True
-        session["user"] = res.data
-        return res.to_response(), 200
+        session["user"] = user_name
+        return ApiResponse(success=True, message="", data=user_name).to_response(), 200
 
     @auth_bp.route('/register', methods=['POST'])
     def register():

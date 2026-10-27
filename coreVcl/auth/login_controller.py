@@ -10,6 +10,9 @@ from modules.mail_process import MailProcess
 from modules.services import Services
 from modules.sql_module import UserModule
 
+# 帳號不存在時拿來比對的假雜湊：讓「帳號不存在」和「密碼錯誤」花的時間一樣，
+# 避免攻擊者用回應時間差猜出哪些帳號存在
+_DUMMY_HASH = generate_password_hash("timeing-equalizer")
 
 class LoginController:
 
@@ -19,19 +22,33 @@ class LoginController:
         self._users: UserData = UserData(db_manager=services.db)
         self._rds: LoginRedisProcess = LoginRedisProcess(client=services.redis)
 
-    def check_user_status(self, username:str, passwd:str):
-        user = self._users.get_user_by_username(username)
-        if not user:
-            return ApiResponse(success= False, message= f"{username}未註冊", data= None)
+    def check_user_status(self, username:str, passwd:str)-> str:
+        """驗證帳號密碼，成功回傳使用者名稱；失敗一律 raise APIError"""
 
-        if not check_password_hash(user.passwd, passwd):
-            return ApiResponse(success=False, message="帳號或密碼錯誤", data=None)
+        if self._rds.is_login_locked(username):
+            # 鎖定期間連正確密碼也不接受，否則攻擊者仍然可以繼續猜
+            raise APIError("登入失敗次數過多，請 15 分鐘後再試", status=429, code="too_many_attempts")
+
+        user = self._users.get_user_by_username(username)
+        # if not user:
+        #     return ApiResponse(success= False, message= f"{username}未註冊", data= None)
+
+        # 帳號不存在也照樣做一次雜湊比對（見 _DUMMY_HASH）
+        password_ok = check_password_hash(user.passwd if user else _DUMMY_HASH, passwd)
+        if user is None or not password_ok:
+            self._rds.record_login_failure(username)
+            raise APIError(
+                message="帳號或密碼錯誤",
+                status=401,
+                code="invalid_credentials")
+
+        self._rds.clear_login_failure(username)
 
         if not user.mail_ready:
-            return ApiResponse(success=False, message="E-mail未確認", data=None)
-
-        return ApiResponse(success=True, message="", data=user.username)
-
+            raise APIError(message="E-mail 尚未驗證，請先完成驗證", status=403, code="email_not_verified")
+        
+        return user.username
+        
     def user_register(self, user_name:str, passwd:str, email:str)->ApiResponse:
         user_c:UserModule | None = self._users.get_user_by_username(user_name)
 
