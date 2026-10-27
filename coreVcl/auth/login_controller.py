@@ -1,3 +1,4 @@
+from venv import logger
 from flask import Flask
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -88,41 +89,25 @@ class LoginController:
 
         return ApiResponse(success=True, message="", data=None)
 
-    def send_reset_password(self, username:str, email:str)->ApiResponse:
+    def send_reset_password(self, username:str, email:str)->None:
         user_c:UserModule | None = self._users.get_user_by_username_and_mail(username, email)
 
         if not user_c:
-            return ApiResponse(
-                success=False,
-                message=f"{username}無此帳號",
-                data=None)
+            logger.info("password reset requested for unknown account")
+            return
 
         if not user_c.mail_ready:
-            return ApiResponse(
-                success=False,
-                message=f"{user_c.username} E-mail未完成驗證",
-                data=None)
+            logger.info("password reset requested for unverified account")
+            return
 
         rand_num: int = modules.secret_number.generate_random_number(100000, 999999)
-        result, mesg = self._rds.reset_password_number(user=user_c, number=rand_num)
-        if not result:
-            return ApiResponse(
-                success=False,
-                message=mesg,
-                data=None )
+        created, mesg = self._rds.reset_password_number(user=user_c, number=rand_num)
+        if not created:
+            return
 
         if not self._mail.send_reset_mail(user=user_c, reset_nu=rand_num):
             # 寄信失敗就清掉 redis 的重設碼，讓使用者可以立即重試
-            _ = self._rds.clean_password_number(user_c)
-            return ApiResponse(
-                success=False,
-                message="重設密碼信寄送失敗，請稍後再試",
-                data=None)
-
-        return ApiResponse(
-            success=True,
-            message="請於E-mail收確認信",
-            data=None)
+            self._rds.clean_password_number(user_c)
 
     def check_reset_id(self, user:str, reset_id:int)->ApiResponse:
         user_c:UserModule | None = self._users.get_user_by_username(username=user)

@@ -1,6 +1,7 @@
 from typing import Any
 
 from flask import Blueprint, render_template, request, session
+from numpy import isin
 
 from auth.login_controller import LoginController
 from modules.api_response import ApiResponse
@@ -98,9 +99,20 @@ def create_auth_bp(login_core: LoginController, name: str = "auth") -> Blueprint
 
         user_name = data.get('reset-username')
         email = data.get('reset-email')
-        res:ApiResponse = login_core.send_reset_password(username=user_name, email=email)
 
-        return res.to_response(), 200
+        if not (isinstance(user_name,str) and isinstance(email)):
+            raise APIError("請輸入帳號和 E-mail", status=400, code="fields_required")
+        user_name, email = user_name.strip(), email.strip()
+        if not user_name or not email:
+            raise APIError("請輸入帳號和 E-mail", status=400, code="fields_required")
+        
+        login_core.send_reset_password(username=user_name, email=email)
+
+        return ApiResponse(
+            success=True,
+            message="如果帳號與 E-mail 相符，重設密碼信已寄出，請到信箱查看",
+            data=None,
+        ).to_response(), 200
 
     @auth_bp.route('/reset_passwd')
     def reset_passwd_by_user():
