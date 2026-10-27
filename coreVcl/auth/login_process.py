@@ -1,5 +1,6 @@
 import logging
 
+from numpy import delete
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -22,8 +23,13 @@ class UserData:
                 return True
             except SQLAlchemyError:
                 session.rollback()
-                logger.exception("create user failed")
+                logger.warning("create user rejected by unique constraint")
                 return False
+
+    def delete_user(self, username:str) -> None:
+        with self._db_m.get_session() as session:
+            session.execute(delete(UserModule).where(UserModule.username == username))
+            session.commit()
 
     def get_user_by_username(self, username:str) -> UserModule | None:
         with self._db_m.get_session() as session:
