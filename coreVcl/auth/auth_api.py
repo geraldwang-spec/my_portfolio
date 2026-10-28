@@ -1,12 +1,19 @@
 from typing import Any
 
 from flask import Blueprint, render_template, request, session
-from numpy import isin
 
 from auth.login_controller import LoginController
 from modules.api_response import ApiResponse
 from modules.errors import APIError
 from modules.utils import UtilsTools
+
+MIN_PASSWORD_LENGTH = 8
+
+
+def _require_new_password(passwd: str) -> None:
+    """新密碼的共同規則：註冊和重設密碼都用這一個"""
+    if len(passwd) < MIN_PASSWORD_LENGTH:
+        raise APIError(f"密碼至少 {MIN_PASSWORD_LENGTH} 個字元", status=400, code="password_too_short")
 
 
 def create_auth_bp(login_core: LoginController, name: str = "auth") -> Blueprint:
@@ -57,26 +64,22 @@ def create_auth_bp(login_core: LoginController, name: str = "auth") -> Blueprint
         passwd_repeat = data.get('register-repeat')
         email = data.get('register-email')
 
-        if not (isinstance(user_name, str) and
-            isinstance(passwd, str) and
-            isinstance(passwd_repeat, str) and
-                isinstance(email, str)):
-            return ApiResponse(
-                success=False,
-                message="請鎮寫完全部欄位",
-                data=None).to_response(), 400
+        # 逐一寫 isinstance，型別檢查器才知道之後這四個變數都是 str
+        if not (isinstance(user_name, str) and isinstance(passwd, str)
+                and isinstance(passwd_repeat, str) and isinstance(email, str)):
+            raise APIError("請填寫完全部欄位", status=400, code="fields_required")
+        user_name, email = user_name.strip(), email.strip()
+        if not user_name or not email:
+            raise APIError("請填寫完全部欄位", status=400, code="fields_required")
 
         if passwd != passwd_repeat:
-            return ApiResponse(
-                success=False,
-                message="密碼不相同",
-                data=None).to_response(), 400
+            raise APIError("密碼不相同", status=400, code="password_mismatch")
+        _require_new_password(passwd)
 
-        return login_core.user_register(
-            user_name=user_name,
-            passwd= passwd,
-            email=email
-        ).to_response(), 200
+        login_core.user_register(user_name=user_name, passwd=passwd, email=email)
+        return ApiResponse(
+            success=True, message="註冊成功，請到信箱完成 E-mail 驗證", data=None
+        ).to_response(), 201
 
     @auth_bp.route('/mailverify')
     def mail_verify():
@@ -100,14 +103,14 @@ def create_auth_bp(login_core: LoginController, name: str = "auth") -> Blueprint
         user_name = data.get('reset-username')
         email = data.get('reset-email')
 
-        if not (isinstance(user_name,str) and isinstance(email)):
+        if not (isinstance(user_name, str) and isinstance(email, str)):
             raise APIError("請輸入帳號和 E-mail", status=400, code="fields_required")
         user_name, email = user_name.strip(), email.strip()
         if not user_name or not email:
             raise APIError("請輸入帳號和 E-mail", status=400, code="fields_required")
-        
-        login_core.send_reset_password(username=user_name, email=email)
 
+        login_core.send_reset_password(username=user_name, email=email)
+        # 不論帳號存不存在都回同一句話，不透露帳號是否存在
         return ApiResponse(
             success=True,
             message="如果帳號與 E-mail 相符，重設密碼信已寄出，請到信箱查看",
@@ -149,6 +152,7 @@ def create_auth_bp(login_core: LoginController, name: str = "auth") -> Blueprint
 
         if not isinstance(passwd, str) or not isinstance(repeat, str) or not passwd:
             raise APIError(message="請輸入新密碼", status=400, code="password_required")
+        _require_new_password(passwd)
 
         res:ApiResponse = login_core.change_user_password(current_user, passwd, repeat)
 

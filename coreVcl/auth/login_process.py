@@ -1,8 +1,7 @@
 import logging
 
-from numpy import delete
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import delete, select
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from modules.sql_module import DatabaseManager, UserModule
 
@@ -15,13 +14,14 @@ class UserData:
 
     # 查詢：DB 錯誤直接往上拋（由 error handler 回 500），None 只代表「查不到」
     # 寫入：失敗時記 log 並回傳 False，由 controller 決定回應
-    def create_user(self, user_data: UserModule)->bool:
+    def create_user(self, user_data: UserModule) -> bool:
+        """建立帳號；帳號或 E-mail 重複（違反 unique）回傳 False，其他 DB 錯誤往上拋"""
         with self._db_m.get_session() as session:
             try:
                 session.add(user_data)
                 session.commit()
                 return True
-            except SQLAlchemyError:
+            except IntegrityError:
                 session.rollback()
                 logger.warning("create user rejected by unique constraint")
                 return False

@@ -20,6 +20,12 @@ class FakeLoginCore:
             return "alice"
         raise APIError("帳號或密碼錯誤", status=401, code="invalid_credentials")
 
+    def user_register(self, user_name, passwd, email):
+        return None
+
+    def send_reset_password(self, username, email):
+        return None
+
     def check_reset_id(self, user, reset_id):
         return ApiResponse(success=False, message="連結無效", data=None)
 
@@ -97,3 +103,39 @@ def test_renew_password_missing_fields_is_400_not_500(client):
         s["reset_user"] = "alice"
     res = client.post("/auth/renew_password", json={})
     assert res.status_code == 400
+
+
+# ---- 註冊的輸入檢查 ----
+REGISTER_OK = {"register-username": "carol", "register-password": "password1",
+               "register-repeat": "password1", "register-email": "carol@example.com"}
+
+
+@pytest.mark.parametrize("change, code", [
+    ({"register-email": None}, "fields_required"),
+    ({"register-username": "   "}, "fields_required"),
+    ({"register-repeat": "different1"}, "password_mismatch"),
+    ({"register-password": "short", "register-repeat": "short"}, "password_too_short"),
+])
+def test_register_rejects_bad_input(client, change, code):
+    res = client.post("/auth/register", json={**REGISTER_OK, **change})
+    assert res.status_code == 400
+    assert res.get_json()["data"]["code"] == code
+
+
+def test_register_success_is_201(client):
+    assert client.post("/auth/register", json=REGISTER_OK).status_code == 201
+
+
+# ---- 忘記密碼的輸入檢查 ----
+@pytest.mark.parametrize("body", [{}, {"reset-username": "alice"}, {"reset-username": " ", "reset-email": "a@b.c"}])
+def test_forgot_password_requires_both_fields(client, body):
+    res = client.post("/auth/resetpasswd", json=body)
+    assert res.status_code == 400
+    assert res.get_json()["data"]["code"] == "fields_required"
+
+
+def test_forgot_password_always_same_answer(client):
+    a = client.post("/auth/resetpasswd", json={"reset-username": "alice", "reset-email": "a@example.com"})
+    b = client.post("/auth/resetpasswd", json={"reset-username": "nobody", "reset-email": "n@example.com"})
+    assert a.status_code == b.status_code == 200
+    assert a.get_json() == b.get_json()

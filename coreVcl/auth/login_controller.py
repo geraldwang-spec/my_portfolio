@@ -1,4 +1,5 @@
-from venv import logger
+import logging
+
 from flask import Flask
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -13,6 +14,8 @@ from modules.sql_module import UserModule
 
 # 帳號不存在時拿來比對的假雜湊：讓「帳號不存在」和「密碼錯誤」花的時間一樣，
 # 避免攻擊者用回應時間差猜出哪些帳號存在
+logger = logging.getLogger(__name__)
+
 _DUMMY_HASH = generate_password_hash("timeing-equalizer")
 
 class LoginController:
@@ -50,30 +53,33 @@ class LoginController:
 
         return user.username
 
-    def user_register(self, user_name:str, passwd:str, email:str)->ApiResponse:
-        user_c:UserModule | None = self._users.get_user_by_username(user_name)
+    def user_register(self, user_name: str, passwd: str, email: str) -> None:
+        """建立帳號並寄出驗證信；失敗一律 raise APIError
 
-        if user_c is not None:
-            return ApiResponse(success=False, message=f"{user_name}存在", data=None)
-
+        順序：先建立帳號、再寄信。寄信失敗就刪掉剛建立的帳號（補償動作），
+        避免出現「信寄出去了，帳號卻沒建成」或「帳號建了，卻收不到驗證信」
+        """
+        # 註冊頁本來就必須告訴使用者名稱被用掉了；列舉的速度由限流控制（4-5）
+        if self._users.get_user_by_username(user_name) is not None:
+            raise APIError("此帳號已被使用", status=409, code="username_taken")
         if self._users.get_user_by_mail(email) is not None:
-            return ApiResponse(success=False, message="此E-mail已被註冊", data=None)
+            raise APIError("此 E-mail 已被註冊", status=409, code="email_taken")
 
         user_c = UserModule(
-            username = user_name,
-            passwd = generate_password_hash(passwd),
-            mail = email,
-            mail_ready = False,
-            mail_check_number = modules.secret_number.generate_random_number(100000, 999999)
+            username=user_name,
+            passwd=generate_password_hash(passwd),
+            mail=email,
+            mail_ready=False,
+            mail_check_number=modules.secret_number.generate_random_number(100000, 999999),
         )
 
-        if not self._mail.send_verify_mail(user=user_c):
-            return ApiResponse(success=False, message="驗證信寄送失敗，請稍後再試", data=None)
-
         if not self._users.create_user(user_c):
-            return ApiResponse(success=False, message=f"{user_name}註冊失敗，請重新註冊", data=None)
+            # 上面檢查過了還是重複：兩個人同時註冊同一個名稱（race condition），由 unique 限制擋下
+            raise APIError("此帳號或 E-mail 已被註冊", status=409, code="account_exists")
 
-        return ApiResponse(success=True, message="", data=None)
+        if not self._mail.send_verify_mail(user=user_c):
+            self._users.delete_user(user_name)   # 補償：撤銷剛建立的帳號，使用者可以直接重新註冊
+            raise APIError("驗證信寄送失敗，請稍後再註冊", status=503, code="mail_send_failed")
 
     def get_check_mail(self, user_name:str, number:str)->ApiResponse:
         user_c = self._users.get_user_by_username(user_name)
@@ -101,8 +107,9 @@ class LoginController:
             return
 
         rand_num: int = modules.secret_number.generate_random_number(100000, 999999)
-        created, mesg = self._rds.reset_password_number(user=user_c, number=rand_num)
+        created, _ = self._rds.reset_password_number(user=user_c, number=rand_num)
         if not created:
+            # 5 分鐘內已經寄過：不重寄，也不告訴對方（否則等於確認帳號存在）
             return
 
         if not self._mail.send_reset_mail(user=user_c, reset_nu=rand_num):
