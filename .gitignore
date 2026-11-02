@@ -1,6 +1,17 @@
+# --- 容器資料（執行期產生，不進版控）---
+sqldata/
+redis_data/
+
+#  --- 本機環境與工具快取 ---
 coreVcl/gradiolib/__pycache__/
 coreVcl/auth/__pycache__/
 coreVcl/modules/__pycache__/
+.venv
+*.db
+.pytest_cache/
+.ruff_cache/
+
+# --- 機密：環境變數檔不進版控，範本要進 ---
 .env
 .env.*
 !.env.example
