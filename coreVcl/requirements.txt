@@ -13,3 +13,5 @@ redis
 pytest
 alembic
 gunicorn
+opencv-python-headless
+numpy
