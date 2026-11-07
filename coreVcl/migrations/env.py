@@ -1,4 +1,5 @@
 """Alembic 執行環境：決定連到哪個資料庫、比對哪些 model"""
+
 from logging.config import fileConfig
 
 from alembic import context
@@ -6,6 +7,7 @@ from sqlalchemy import create_engine, pool
 
 from modules.settings import get_database_url
 from modules.sql_module import Base  # 所有 model 都繼承 Base，autogenerate 靠它比對
+import middleware.production_process.production_modules
 
 config = context.config
 if config.config_file_name is not None:
@@ -47,7 +49,8 @@ def run_migrations_online() -> None:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            render_as_batch=connection.dialect.name == "sqlite",  # SQLite 改欄位需要 batch 模式
+            render_as_batch=connection.dialect.name
+            == "sqlite",  # SQLite 改欄位需要 batch 模式
         )
         with context.begin_transaction():
             context.run_migrations()
