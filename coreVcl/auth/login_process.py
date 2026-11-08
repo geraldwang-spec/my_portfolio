@@ -3,6 +3,11 @@ import logging
 from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
+from middleware.production_process.production_modules import (
+    Role,
+    Workspace,
+    WorkspaceMember,
+)
 from modules.sql_module import DatabaseManager, UserModule
 
 logger = logging.getLogger(__name__)
@@ -18,7 +23,14 @@ class UserData:
         """建立帳號；帳號或 E-mail 重複（違反 unique）回傳 False，其他 DB 錯誤往上拋"""
         with self._db_m.get_session() as session:
             try:
-                session.add(user_data)
+                ws = Workspace(name=f"{user_data.username}的工作區")
+                session.add_all([user_data, ws])
+                session.flush()
+                session.add(
+                    WorkspaceMember(
+                        workspace_id=ws.id, user_id=user_data.id, role=Role.OWNER
+                    )
+                )
                 session.commit()
                 return True
             except IntegrityError:
@@ -26,12 +38,26 @@ class UserData:
                 logger.warning("create user rejected by unique constraint")
                 return False
 
-    def delete_user(self, username:str) -> None:
+    def delete_user(self, username: str) -> None:
         with self._db_m.get_session() as session:
+            user_id = session.scalar(
+                select(UserModule.id).where(UserModule.username == username)
+            )
+            if user_id is None:
+                return
+            ws_ids = session.scalars(
+                select(WorkspaceMember.workspace_id).where(
+                    WorkspaceMember.user_id == user_id
+                )
+            ).all()
+            session.execute(
+                delete(WorkspaceMember).where(WorkspaceMember.user_id == user_id)
+            )
+            session.execute(delete(Workspace).where(Workspace.id.in_(ws_ids)))
             session.execute(delete(UserModule).where(UserModule.username == username))
             session.commit()
 
-    def get_user_by_username(self, username:str) -> UserModule | None:
+    def get_user_by_username(self, username: str) -> UserModule | None:
         with self._db_m.get_session() as session:
             stmt = select(UserModule).where(UserModule.username == username)
             user = session.scalars(stmt).first()
@@ -39,7 +65,7 @@ class UserData:
                 session.expunge(user)
             return user
 
-    def get_user_by_mail(self, mail:str) -> UserModule | None:
+    def get_user_by_mail(self, mail: str) -> UserModule | None:
         with self._db_m.get_session() as session:
             stmt = select(UserModule).where(UserModule.mail == mail)
             user = session.scalars(stmt).first()
@@ -47,15 +73,19 @@ class UserData:
                 session.expunge(user)
             return user
 
-    def get_user_by_username_and_mail(self, username:str, mail:str) -> UserModule|None:
+    def get_user_by_username_and_mail(
+        self, username: str, mail: str
+    ) -> UserModule | None:
         with self._db_m.get_session() as session:
-            stmt = select(UserModule).where((UserModule.username == username) & (UserModule.mail == mail))
+            stmt = select(UserModule).where(
+                (UserModule.username == username) & (UserModule.mail == mail)
+            )
             user = session.scalars(stmt).first()
             if user:
                 session.expunge(user)
             return user
 
-    def update_mail_ready(self, username:str, ready:bool) ->bool:
+    def update_mail_ready(self, username: str, ready: bool) -> bool:
         with self._db_m.get_session() as session:
             try:
                 stmt = select(UserModule).where(UserModule.username == username)
@@ -72,7 +102,7 @@ class UserData:
                 logger.exception("update mail_ready failed")
                 return False
 
-    def update_password_by_user(self, user:str, pwd_hash:str)->bool:
+    def update_password_by_user(self, user: str, pwd_hash: str) -> bool:
         with self._db_m.get_session() as session:
             try:
                 stmt = select(UserModule).where(UserModule.username == user)
