@@ -3,11 +3,7 @@ import logging
 from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from middleware.production_process.production_modules import (
-    Role,
-    Workspace,
-    WorkspaceMember,
-)
+from production.modules import Role, Workspace, WorkspaceMember
 from modules.sql_module import DatabaseManager, UserModule
 
 logger = logging.getLogger(__name__)

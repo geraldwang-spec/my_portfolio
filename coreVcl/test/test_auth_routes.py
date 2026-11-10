@@ -1,5 +1,7 @@
 """帳號路由的錯誤輸入：任何錯誤輸入都不能變成 500"""
+
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from flask import Flask
@@ -17,7 +19,7 @@ class FakeLoginCore:
 
     def check_user_status(self, username, passwd):
         if username == "alice" and passwd == "correct-pw":
-            return "alice"
+            return SimpleNamespace(id=1, username="alice")
         raise APIError("帳號或密碼錯誤", status=401, code="invalid_credentials")
 
     def user_register(self, user_name, passwd, email):
@@ -34,7 +36,7 @@ class FakeLoginCore:
 def client():
     app = Flask(__name__, template_folder=str(TEMPLATES))
     app.secret_key = "test-only"
-    app.config.update(session_cookies_config())    # 用正式環境的 cookie 設定
+    app.config.update(session_cookies_config())  # 用正式環境的 cookie 設定
     register_error_handlers(app)
     app.register_blueprint(create_auth_bp(FakeLoginCore()))
     client = app.test_client()
@@ -54,7 +56,7 @@ def test_non_object_json_returns_400(client, path):
 def test_reset_link_with_non_numeric_id_shows_error_page(client):
     res = client.get("/auth/reset_passwd?user=alice&resetId=abc")
     assert res.status_code == 400
-    assert res.mimetype == "text/html"             # 使用者看到錯誤頁，不是 JSON
+    assert res.mimetype == "text/html"  # 使用者看到錯誤頁，不是 JSON
 
 
 def test_reset_link_with_wrong_id_shows_error_page(client):
@@ -65,13 +67,17 @@ def test_reset_link_with_wrong_id_shows_error_page(client):
 
 # ---- 登入 / me / 登出 ----
 def test_failed_login_does_not_create_session(client):
-    res = client.post("/auth/login", json={"login-username": "alice", "login-password": "wrong"})
+    res = client.post(
+        "/auth/login", json={"login-username": "alice", "login-password": "wrong"}
+    )
     assert res.status_code == 401
     assert client.get("/auth/me").status_code == 401
 
 
 def test_login_me_logout_flow(client):
-    res = client.post("/auth/login", json={"login-username": "alice", "login-password": "correct-pw"})
+    res = client.post(
+        "/auth/login", json={"login-username": "alice", "login-password": "correct-pw"}
+    )
     assert res.status_code == 200
 
     me = client.get("/auth/me")
@@ -83,14 +89,16 @@ def test_login_me_logout_flow(client):
 
 
 def test_login_cookie_flags(client):
-    res = client.post("/auth/login", json={"login-username": "alice", "login-password": "correct-pw"})
+    res = client.post(
+        "/auth/login", json={"login-username": "alice", "login-password": "correct-pw"}
+    )
     cookie = res.headers["Set-Cookie"]
     # 這些是安全需求，用測試鎖住，防止日後被誤改
     assert cookie.startswith("__Host-session=")
     assert "Secure" in cookie
     assert "HttpOnly" in cookie
     assert "SameSite=Lax" in cookie
-    assert "Expires=" in cookie                    # 確認 session.permanent 有生效
+    assert "Expires=" in cookie  # 確認 session.permanent 有生效
 
 
 def test_renew_password_without_reset_session(client):
@@ -98,24 +106,35 @@ def test_renew_password_without_reset_session(client):
     assert res.status_code == 400
     assert res.get_json()["data"]["code"] == "reset_session_missing"
 
+
 def test_renew_password_missing_fields_is_400_not_500(client):
-    with client.session_transaction() as s:   # 模擬已經從信件點開重設連結
+    with client.session_transaction() as s:  # 模擬已經從信件點開重設連結
         s["reset_user"] = "alice"
     res = client.post("/auth/renew_password", json={})
     assert res.status_code == 400
 
 
 # ---- 註冊的輸入檢查 ----
-REGISTER_OK = {"register-username": "carol", "register-password": "password1",
-               "register-repeat": "password1", "register-email": "carol@example.com"}
+REGISTER_OK = {
+    "register-username": "carol",
+    "register-password": "password1",
+    "register-repeat": "password1",
+    "register-email": "carol@example.com",
+}
 
 
-@pytest.mark.parametrize("change, code", [
-    ({"register-email": None}, "fields_required"),
-    ({"register-username": "   "}, "fields_required"),
-    ({"register-repeat": "different1"}, "password_mismatch"),
-    ({"register-password": "short", "register-repeat": "short"}, "password_too_short"),
-])
+@pytest.mark.parametrize(
+    "change, code",
+    [
+        ({"register-email": None}, "fields_required"),
+        ({"register-username": "   "}, "fields_required"),
+        ({"register-repeat": "different1"}, "password_mismatch"),
+        (
+            {"register-password": "short", "register-repeat": "short"},
+            "password_too_short",
+        ),
+    ],
+)
 def test_register_rejects_bad_input(client, change, code):
     res = client.post("/auth/register", json={**REGISTER_OK, **change})
     assert res.status_code == 400
@@ -127,7 +146,10 @@ def test_register_success_is_201(client):
 
 
 # ---- 忘記密碼的輸入檢查 ----
-@pytest.mark.parametrize("body", [{}, {"reset-username": "alice"}, {"reset-username": " ", "reset-email": "a@b.c"}])
+@pytest.mark.parametrize(
+    "body",
+    [{}, {"reset-username": "alice"}, {"reset-username": " ", "reset-email": "a@b.c"}],
+)
 def test_forgot_password_requires_both_fields(client, body):
     res = client.post("/auth/resetpasswd", json=body)
     assert res.status_code == 400
@@ -135,7 +157,13 @@ def test_forgot_password_requires_both_fields(client, body):
 
 
 def test_forgot_password_always_same_answer(client):
-    a = client.post("/auth/resetpasswd", json={"reset-username": "alice", "reset-email": "a@example.com"})
-    b = client.post("/auth/resetpasswd", json={"reset-username": "nobody", "reset-email": "n@example.com"})
+    a = client.post(
+        "/auth/resetpasswd",
+        json={"reset-username": "alice", "reset-email": "a@example.com"},
+    )
+    b = client.post(
+        "/auth/resetpasswd",
+        json={"reset-username": "nobody", "reset-email": "n@example.com"},
+    )
     assert a.status_code == b.status_code == 200
     assert a.get_json() == b.get_json()
