@@ -15,13 +15,15 @@ class Services:
     redis: redis.Redis
     mail: MailProcess
 
-def build_services(app:Flask, settings:AppSettings)->Services:
+
+def build_services(app: Flask, settings: AppSettings) -> Services:
     return Services(
-        db = DatabaseManager(db_url=settings.database_url),
+        db=DatabaseManager(db_url=settings.database_url),
         redis=RedisClient(
             RedisSetting(
                 host=settings.redis_ip,
                 password=settings.redis_password,
-            )).get_connection(),
+            )
+        ).get_connection(),
         mail=MailProcess(app=app),
     )

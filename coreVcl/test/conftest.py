@@ -1,4 +1,5 @@
 """pytest 共用設定：讓測試能 import coreVcl 底下的套件（auth、modules）"""
+
 import sys
 from pathlib import Path
 

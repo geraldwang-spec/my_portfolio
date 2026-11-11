@@ -1,4 +1,5 @@
 """整個 app 的設定：環境變數、/run/secrets，以及由它們組出來的 Flask 設定"""
+
 import json
 import os
 import urllib.request
@@ -9,8 +10,8 @@ from pathlib import Path
 from sqlalchemy.engine import URL
 
 
-def read_secret(name:str)->str:
-    secrets_dir:Path = Path(os.environ.get("SECRETS_DIR", "/run/secrets"))
+def read_secret(name: str) -> str:
+    secrets_dir: Path = Path(os.environ.get("SECRETS_DIR", "/run/secrets"))
     path = secrets_dir / name
 
     if path.is_file():
@@ -18,11 +19,13 @@ def read_secret(name:str)->str:
 
     raise RuntimeError(f"找不到機密 {name!r}：{path} 不存在")
 
-def require_env(name:str)->str:
+
+def require_env(name: str) -> str:
     if value := os.environ.get(name):
         return value
 
     raise RuntimeError(f"環境變數 {name} 未設定")
+
 
 def public_base_url() -> str:
     """對外網址，結尾不含斜線，例如 https://xxxx.trycloudflare.com
@@ -50,42 +53,43 @@ def public_base_url() -> str:
 
 @dataclass(frozen=True)
 class AppSettings:
-    secret_key:str
-    mail_username:str
-    mail_password:str
-    redis_ip:str
-    redis_password:str
+    secret_key: str
+    mail_username: str
+    mail_password: str
+    redis_ip: str
+    redis_password: str
     database_url: URL
 
     def __repr__(self) -> str:
-       # 避免 print(settings) 或例外訊息把密碼印進 log
-       return f"Settings(mail_username={self.mail_username!r}, redis_ip={self.redis_ip!r}, db={self.database_url!r})"
+        # 避免 print(settings) 或例外訊息把密碼印進 log
+        return f"Settings(mail_username={self.mail_username!r}, redis_ip={self.redis_ip!r}, db={self.database_url!r})"
 
 
-def get_settings()-> AppSettings:
+def get_settings() -> AppSettings:
     return AppSettings(
-        redis_ip = require_env("REDIS_IP"),
-        redis_password= read_secret("redis_password"),
-        secret_key = read_secret("secret_key"),
-        mail_username= require_env("MAIL_USERNAME"),
-        mail_password = read_secret("mail_password"),
-        database_url = get_database_url(),
+        redis_ip=require_env("REDIS_IP"),
+        redis_password=read_secret("redis_password"),
+        secret_key=read_secret("secret_key"),
+        mail_username=require_env("MAIL_USERNAME"),
+        mail_password=read_secret("mail_password"),
+        database_url=get_database_url(),
     )
 
-def get_database_url()->URL:
+
+def get_database_url() -> URL:
     return URL.create(
-            drivername = "mysql+pymysql",
-            username = require_env("MYSQL_USER"),
-            password = read_secret("mysql_password"),
-            host = require_env("MARIADB_IP"),
-            port = 3306,
-            database = require_env("MYSQL_DATABASE"),
+        drivername="mysql+pymysql",
+        username=require_env("MYSQL_USER"),
+        password=read_secret("mysql_password"),
+        host=require_env("MARIADB_IP"),
+        port=3306,
+        database=require_env("MYSQL_DATABASE"),
     )
 
 
-def session_cookies_config()->dict[str,object]:
+def session_cookies_config() -> dict[str, object]:
     return {
-        "SESSION_COOKIE_SECURE": True,           # dev 用 IP 連線時才不會吃掉 cookie
+        "SESSION_COOKIE_SECURE": True,  # dev 用 IP 連線時才不會吃掉 cookie
         "SESSION_COOKIE_HTTPONLY": True,
         "SESSION_COOKIE_SAMESITE": "Lax",
         "PERMANENT_SESSION_LIFETIME": timedelta(hours=8),
@@ -94,7 +98,8 @@ def session_cookies_config()->dict[str,object]:
         "SESSION_COOKIE_NAME": "__Host-session",
     }
 
-def mail_config(settings: AppSettings)->dict[str, object]:
+
+def mail_config(settings: AppSettings) -> dict[str, object]:
     """Flask-Mail 需要的設定，原本寫在 LoginController.init_core 裡"""
     return {
         "MAIL_SERVER": "smtp.gmail.com",
@@ -104,4 +109,3 @@ def mail_config(settings: AppSettings)->dict[str, object]:
         "MAIL_USERNAME": settings.mail_username,
         "MAIL_PASSWORD": settings.mail_password,
     }
-

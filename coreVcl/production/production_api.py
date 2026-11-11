@@ -1,5 +1,5 @@
+from flask import Blueprint
 from production.product_controller import ProductionController
-from flask import Blueprint, render_template, request, session
 
 from modules.api_response import ApiResponse
 

@@ -1,4 +1,5 @@
 """寄信失敗的 log 只能出現網域，不能出現完整 Email"""
+
 from modules.mail_process import _mail_domain
 
 

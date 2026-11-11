@@ -1,9 +1,9 @@
 import logging
 
+from production.modules import Role, Workspace, WorkspaceMember
 from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from production.modules import Role, Workspace, WorkspaceMember
 from modules.sql_module import DatabaseManager, UserModule
 
 logger = logging.getLogger(__name__)

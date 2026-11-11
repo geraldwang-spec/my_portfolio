@@ -5,9 +5,9 @@ from pydantic import BaseModel
 
 
 class ApiResponse(BaseModel):
-    success:bool
-    message:str
-    data:Any
+    success: bool
+    message: str
+    data: Any
 
-    def to_response(self)-> Response:
+    def to_response(self) -> Response:
         return jsonify(self.model_dump())

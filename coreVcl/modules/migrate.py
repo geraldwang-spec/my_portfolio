@@ -1,4 +1,5 @@
 """資料庫 migration：在 app 開始服務之前，把資料庫升級到最新版本"""
+
 from pathlib import Path
 
 from alembic import command
@@ -14,5 +15,5 @@ def upgrade_database(dburl: str | None = None) -> None:
     """
     cfg = Config(str(ALEMBIC_INI))
     if dburl is not None:
-        cfg.attributes["dburl"] = dburl     # migrations/env.py 會優先使用這個值
+        cfg.attributes["dburl"] = dburl  # migrations/env.py 會優先使用這個值
     command.upgrade(cfg, "head")

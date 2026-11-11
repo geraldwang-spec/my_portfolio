@@ -3,11 +3,7 @@
 import fakeredis
 import pytest
 from flask import Flask
-from middleware.production_process.production_modules import (
-    Role,
-    Workspace,
-    WorkspaceMember,
-)
+from production.modules import Role, Workspace, WorkspaceMember
 from sqlalchemy import event, func, select
 from werkzeug.security import generate_password_hash
 

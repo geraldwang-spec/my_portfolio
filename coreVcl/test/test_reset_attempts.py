@@ -1,4 +1,5 @@
 """重設碼錯誤次數上限：用 fakeredis 取代真的 Redis，CI 不需要啟動容器"""
+
 from types import SimpleNamespace
 
 import fakeredis
@@ -21,6 +22,7 @@ def fake():
 def rds(fake):
     # FakeRedis 是 redis.Redis 的子類別，可以直接從建構子傳進去，不用 monkeypatch
     return lrp.LoginRedisProcess(client=fake)
+
 
 @pytest.fixture
 def user():
@@ -54,7 +56,7 @@ def test_one_below_limit_still_allows_correct_code(rds, user, fake):
         rds.verify_reset_number(user_id=USER_ID, reset_id=WRONG)
 
     assert rds.verify_reset_number(user_id=USER_ID, reset_id=CODE)
-    assert fake.ttl(KEY) > 0          # 累加 fails 不會讓 key 失去期限
+    assert fake.ttl(KEY) > 0  # 累加 fails 不會讓 key 失去期限
 
 
 def test_can_request_again_after_lockout(rds, user):

@@ -1,4 +1,3 @@
-from datetime import timedelta
 import os
 
 from flask import Blueprint, Flask, render_template

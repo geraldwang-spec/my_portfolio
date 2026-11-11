@@ -1,4 +1,5 @@
 """用真正的 create_app() 組出 app，只把設定換成測試用的"""
+
 import fakeredis
 import pytest
 from flask import Flask
@@ -18,7 +19,7 @@ def settings(tmp_path):
         secret_key="test-only",
         mail_username="test@example.com",
         mail_password="unused",
-        redis_ip="localhost",          # 連線池是用到時才連線，建立 app 時不會真的連
+        redis_ip="localhost",  # 連線池是用到時才連線，建立 app 時不會真的連
         redis_password="unused",
         database_url=make_url(f"sqlite:///{tmp_path / 'test.db'}"),
     )
@@ -37,7 +38,7 @@ def client(settings):
     )
     app = create_app(settings=settings, services=services)
     client = app.test_client()
-    client.environ_base["wsgi.url_scheme"] = "https"   # Secure cookie 需要 HTTPS
+    client.environ_base["wsgi.url_scheme"] = "https"  # Secure cookie 需要 HTTPS
     return client
 
 
@@ -50,7 +51,9 @@ def test_unknown_path_returns_json_404(client):
 
 def test_login_unknown_user_is_401(client):
     # 這次走的是真正的 LoginController + SQLite，不是 FakeLoginCore
-    res = client.post("/auth/login", json={"login-username": "nobody", "login-password": "x"})
+    res = client.post(
+        "/auth/login", json={"login-username": "nobody", "login-password": "x"}
+    )
     assert res.status_code == 401
     assert res.get_json()["success"] is False
 

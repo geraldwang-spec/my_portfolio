@@ -1,4 +1,5 @@
 """Alembic migration：空資料庫能升級到最新，且 model 和 migration 沒有落差"""
+
 from pathlib import Path
 
 import pytest
@@ -18,7 +19,7 @@ def alembic_cfg(tmp_path):
 
 
 def test_upgrade_from_empty_database(alembic_cfg):
-    command.upgrade(alembic_cfg, "head")       # 全新環境（例如新主機）要能一路升到最新
+    command.upgrade(alembic_cfg, "head")  # 全新環境（例如新主機）要能一路升到最新
 
 
 def test_models_match_migrations(alembic_cfg):
@@ -32,7 +33,7 @@ def test_models_match_migrations(alembic_cfg):
 
 def test_downgrade_to_base(alembic_cfg):
     command.upgrade(alembic_cfg, "head")
-    command.downgrade(alembic_cfg, "base")     # 每個 migration 的 downgrade 都要能執行
+    command.downgrade(alembic_cfg, "base")  # 每個 migration 的 downgrade 都要能執行
 
 
 def test_upgrade_database_helper(tmp_path):
@@ -43,5 +44,5 @@ def test_upgrade_database_helper(tmp_path):
 
     url = f"sqlite:///{tmp_path / 'g.db'}"
     upgrade_database(url)
-    upgrade_database(url)                       # 第二次執行：已是最新版本，不應出錯
+    upgrade_database(url)  # 第二次執行：已是最新版本，不應出錯
     assert "login" in inspect(create_engine(url)).get_table_names()
