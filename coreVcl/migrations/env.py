@@ -2,6 +2,7 @@
 
 from logging.config import fileConfig
 
+import production.modules  # noqa: F401 載入後資料表才會註冊到 Base.metadata，autogenerate 才看得到
 from alembic import context
 from sqlalchemy import create_engine, pool
 
