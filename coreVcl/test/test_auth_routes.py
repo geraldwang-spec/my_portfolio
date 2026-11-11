@@ -31,6 +31,9 @@ class FakeLoginCore:
     def check_reset_id(self, user, reset_id):
         return ApiResponse(success=False, message="連結無效", data=None)
 
+    def list_workspaces(self, user_id: int):
+        return [{"id": 7, "name": "alice的工作區", "role": "owner"}]
+
 
 @pytest.fixture
 def client():

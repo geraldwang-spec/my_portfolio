@@ -169,3 +169,6 @@ class LoginController:
             self.app.logger.warning("reset code cleanup failed after password change")
 
         return ApiResponse(success=True, message="", data=None)
+
+    def list_workspaces(self, user_id: int) -> list[dict[str, object]]:
+        return self._users.list_workspaces(user_id)

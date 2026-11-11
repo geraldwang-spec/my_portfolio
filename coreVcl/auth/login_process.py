@@ -114,3 +114,21 @@ class UserData:
                 session.rollback()
                 logger.exception("update password failed")
                 return False
+
+    def list_workspaces(self, user_id: int) -> list[dict[str, object]]:
+        with self._db_m.get_session() as session:
+            try:
+                rows = session.execute(
+                    select(Workspace.id, Workspace.name, WorkspaceMember.role)
+                    .join(WorkspaceMember, WorkspaceMember.workspace_id == Workspace.id)
+                    .where(WorkspaceMember.user_id == user_id)
+                    .order_by(Workspace.id)
+                ).all()
+                return [
+                    {"id": ws_id, "name": name, "role": role.value}
+                    for ws_id, name, role in rows
+                ]
+            except SQLAlchemyError:
+                session.rollback()
+                logger.exception("list Workspaces failed")
+                return []

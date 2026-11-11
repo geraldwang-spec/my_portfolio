@@ -172,13 +172,19 @@ def create_auth_bp(login_core: LoginController, name: str = "auth") -> Blueprint
 
     @auth_bp.route("/me")
     def me():
-        name = session.get("username")
-        if not name:
+        user_id = session.get("user_id")
+        if user_id is None:
             return ApiResponse(
                 success=False, message="didn't login", data=None
             ).to_response(), 401
 
-        return {"success": True, "user": {"username": name}}
+        return {
+            "success": True,
+            "user": {
+                "username": session.get("username"),
+                "workspace": login_core.list_workspaces(user_id),
+            },
+        }
 
     @auth_bp.route("/logout", methods=["POST"])
     def logout():
