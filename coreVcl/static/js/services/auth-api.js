@@ -38,8 +38,12 @@ async function submit(name, data) {
 }
 
 const toUser = (u, fallbackName) => (
-  typeof u === 'string' ? { name: u, email: '' }
-    : { name: u?.username || u?.name || fallbackName || '使用者', email: u?.email || '' }
+  typeof u === 'string' ? { name: u, email: '', workspaces: [] }
+    : {
+      name: u?.username || u?.name || fallbackName || '使用者',
+      email: u?.email || '',
+      workspaces: Array.isArray(u?.workspaces) ? u.workspaces : []
+    }
 );
 
 /**
