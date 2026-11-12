@@ -10,5 +10,6 @@
  *   3. config.js 的選單設定 type: '<名稱>'
  * ========================================================= */
 export const views = {
-  cie1931: () => import('./cie1931/index.js')
+  cie1931: () => import('./cie1931/index.js'),
+  production: () => import('./production/index.js')
 };

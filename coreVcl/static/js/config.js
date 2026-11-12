@@ -112,7 +112,7 @@ const config = {
       ]
     }
 
-    ,{
+    , {
       id: 'image-processing',
       label: '影像處理',
       icon: 'image',
@@ -154,8 +154,24 @@ const config = {
           }
         }
       ]
+
     }
 
+    , {
+      id: 'production',
+      label: '產線卡控',
+      icon: 'cpu',                     // 先借用現有的圖示，之後再到圖示庫加一個
+      description: '序號追溯、卡控與品質分析',
+      nav: [
+        {
+          id: 'production-home',
+          label: '首頁',
+          icon: 'cpu',
+          type: 'production',          // 對應 views/index.js 的 key
+          title: '產線卡控'
+        }
+      ]
+    }
     /* 新增主題範例：複製上方主題物件，修改 id / label / icon / nav 即可 */
   ],
 
