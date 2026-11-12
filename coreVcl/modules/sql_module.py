@@ -30,7 +30,7 @@ class UserModule(Base):
 
 class DatabaseManager:
     def __init__(self, db_url: str | URL = "sqlite:///login.db") -> None:
-        self.engine: Engine = create_engine(db_url, echo=False)
+        self.engine: Engine = create_engine(db_url, echo=False, hide_parameters=True)
         self._session_factory: sessionmaker[Session] = sessionmaker(
             bind=self.engine, expire_on_commit=False
         )
