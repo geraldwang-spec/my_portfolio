@@ -35,6 +35,8 @@ services:
     environment:
       - MYSQL_USER=${MYSQL_USER:?MYSQL_USER not set}
       - MYSQL_DATABASE=${MYSQL_DATABASE:?MYSQL_DATABASE not set}
+      - MYSQL_CHARSET=utf8mb4
+      - MYSQL_COLLATION=utf8mb4_unicode_ci
     secrets:
       - {source: mysql_password,      type: env, target: MYSQL_PASSWORD}
       - {source: mysql_root_password, type: env, target: MYSQL_ROOT_PASSWORD}

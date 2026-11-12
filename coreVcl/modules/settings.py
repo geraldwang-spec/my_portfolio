@@ -84,6 +84,7 @@ def get_database_url() -> URL:
         host=require_env("MARIADB_IP"),
         port=3306,
         database=require_env("MYSQL_DATABASE"),
+        query={"charset": "utf8mb4"},
     )
 
 
