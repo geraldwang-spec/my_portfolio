@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import Boolean, Engine, Integer, String, create_engine
+from typing import Any
+from sqlalchemy import Boolean, Engine, Integer, String, create_engine, event
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
@@ -30,7 +31,23 @@ class UserModule(Base):
 
 class DatabaseManager:
     def __init__(self, db_url: str | URL = "sqlite:///login.db") -> None:
-        self.engine: Engine = create_engine(db_url, echo=False, hide_parameters=True)
+        self.engine: Engine = create_engine(
+            url=db_url,
+            echo=False,
+            hide_parameters=True,
+            pool_pre_ping=True,
+            pool_recycle=3600,
+        )
+
+        # 2. SQLite 才需要：每條新連線都打開外鍵檢查，讓測試行為跟 MariaDB 一致
+        if self.engine.dialect.name == "sqlite":
+
+            @event.listens_for(self.engine, "connect")
+            def _enable_fk(dbapi_conn: Any, _record: Any) -> None:
+                cursor = dbapi_conn.cursor()
+                cursor.execute("PRAGMA foreign_keys=ON")
+                cursor.close()
+
         self._session_factory: sessionmaker[Session] = sessionmaker(
             bind=self.engine, expire_on_commit=False
         )

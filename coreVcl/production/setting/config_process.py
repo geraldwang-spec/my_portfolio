@@ -1,6 +1,5 @@
 from math import e
-import select
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from modules.sql_module import DatabaseManager
 from production.db_errors import is_fk_violation, is_unique_violation
