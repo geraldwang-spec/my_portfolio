@@ -1,10 +1,10 @@
-from math import e
-from sqlalchemy import delete, select
-from sqlalchemy.exc import IntegrityError
-from modules.sql_module import DatabaseManager
 from production.db_errors import is_fk_violation, is_unique_violation
 from production.errors import DuplicateError, InUseError, NotFoundError
 from production.modules import Customer
+from sqlalchemy import delete, select
+from sqlalchemy.exc import IntegrityError
+
+from modules.sql_module import DatabaseManager
 
 
 class ConfigProcess:
