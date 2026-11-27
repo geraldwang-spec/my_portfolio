@@ -1,17 +1,9 @@
-from ntpath import exists
-import fakeredis
 import pytest
-from flask import Flask
-from production.modules import Customer, Role, Workspace, WorkspaceMember
-from sqlalchemy import event, func, select
-from werkzeug.security import generate_password_hash
-
-from auth.login_controller import LoginController
-from auth.login_process import UserData
-from modules.errors import APIError
-from modules.services import Services
-from modules.sql_module import Base, DatabaseManager, UserModule
+from production.errors import InUseError, NotFoundError
+from production.modules import Project, Workspace
 from production.setting.config_process import ConfigProcess
+
+from modules.sql_module import Base, DatabaseManager
 
 
 @pytest.fixture
@@ -36,16 +28,20 @@ def repo(db) -> ConfigProcess:
     return ConfigProcess(db)
 
 
-@pytest.fixture
-def _make_ws(_db: DatabaseManager):
+@pytest.fixture(name="make_ws")
+def _make_ws(db: DatabaseManager):
     def _make(name: str = "test ws") -> int:
-        with _db.get_session() as s:
+        with db.get_session() as s:
             ws = Workspace(name=name)
             s.add(ws)
             s.commit()
             return ws.id
 
     return _make
+
+@pytest.fixture
+def test_name()->str:
+    return "ACMP"
 
 
 def test_add_customer(ws_id: int, repo: ConfigProcess) -> None:
@@ -83,3 +79,28 @@ def test_detete_customer(ws_id: int, repo: ConfigProcess) -> None:
     cus = repo.add_customer(ws_id, "ACMP")
     repo.delete_customer(ws_id, cus.id)
     assert repo.get_customer(ws_id, cus.name) is None
+
+def test_delete_customer_not_found(ws_id:int, repo:ConfigProcess)->None:
+    with pytest.raises(NotFoundError, match="999"):
+        repo.delete_customer(ws_id, 999)
+
+def test_detete_customer_of_other_workspace(make_ws, repo:ConfigProcess)->None:
+    ws1,ws2 = make_ws("ws1"), make_ws("ws2")
+    cus = repo.add_customer(ws1, "ACMP")
+    with pytest.raises(NotFoundError):
+        repo.delete_customer(ws2, cus.id)
+    assert repo.get_customer(ws1, "ACMP") is not None
+
+def test_delete_customer_in_use(db:DatabaseManager, ws_id:int, repo:ConfigProcess, test_name:str)->None:
+    cus = repo.add_customer(ws_id, test_name)
+    with db.get_session() as s:
+        s.add(Project(workspace_id=ws_id, project_code="P001", name="Demo", customer_id=cus.id))
+        s.commit()
+
+    with pytest.raises(InUseError) as e:
+        repo.delete_customer(ws_id, cus.id)
+
+    err = e.value
+    print(repr(err))
+    assert repo.get_customer(ws_id, test_name) is not None
+
